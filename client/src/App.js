@@ -15,7 +15,10 @@ import AnalyticsReport from "./Frontend/components/Dashboard/analytics";
 import Settings from "./Frontend/components/Dashboard/settings";
 import Profile from "./Frontend/components/Dashboard/profile";
 import AIChat from "./Frontend/components/chatbot/AIChat";
+import Contact from "./Frontend/components/Contact/contact";
 import LifeManagement from "./Frontend/components/Dashboard/lifemanagement";
+import StatisticsPage from "./Frontend/components/Dashboard/statistics";
+
 
 function App() {
   return (
@@ -146,6 +149,19 @@ function App() {
             </>
           }
         />
+
+        <Route
+          path="/statistics"
+          element={
+            <>
+              <MiniNavbar />
+              <Sidebar />
+              <StatisticsPage />
+              <Footer />
+            </>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );
