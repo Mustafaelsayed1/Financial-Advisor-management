@@ -179,6 +179,12 @@ const Sidebar = () => {
             <FaCog /> AIChat
           </Link>
         </li>
+        <li>
+  <Link to="/LifeManagement">
+    <FaClipboardList /> Life Management
+  </Link>
+</li>
+
       </ul>
     </div>
   );

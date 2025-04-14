@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
 import Login from "./Frontend/components/LOGIN&REGISTRATION/Login/Login";
 import Signup from "./Frontend/components/LOGIN&REGISTRATION/Signup/Signup";
 import Home from "./Frontend/components/Home/home";
 import NavBar from "./Frontend/components/Home/Navbar";
-// import PaymentHistory from "./Frontend/components/Dashboard/PaymentHistory";
 import Footer from "./Frontend/components/Home/Footer";
 import MiniNavbar from "./Frontend/components/Home/Mininavbar";
 import Chatbot from "./Frontend/components/chatbot/chatbot";
@@ -15,12 +15,13 @@ import AnalyticsReport from "./Frontend/components/Dashboard/analytics";
 import Settings from "./Frontend/components/Dashboard/settings";
 import Profile from "./Frontend/components/Dashboard/profile";
 import AIChat from "./Frontend/components/chatbot/AIChat";
-import Contact from "./Frontend/components/Contact/contact";
+import LifeManagement from "./Frontend/components/Dashboard/lifemanagement";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Home Page */}
         <Route
           path="/"
           element={
@@ -31,7 +32,9 @@ function App() {
               <Footer />
             </>
           }
-        />{" "}
+        />
+
+        {/* Login Page */}
         <Route
           path="/login"
           element={
@@ -41,6 +44,8 @@ function App() {
             </>
           }
         />
+
+        {/* Signup Page */}
         <Route
           path="/Signup"
           element={
@@ -50,27 +55,8 @@ function App() {
             </>
           }
         />
-        {/* <Route
-          path="/PaymentHistory"
-          element={
-            <>
-              <MiniNavBar />
-              <PaymentHistory />
-              <Sidebar />
-              <Footer />
-            </> 
-          }
-        />*/}
-        <Route
-          path="/contact"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <Contact />
-            </>
-          }
-        />
+
+        {/* Settings */}
         <Route
           path="/Settings"
           element={
@@ -82,6 +68,8 @@ function App() {
             </>
           }
         />
+
+        {/* Profile */}
         <Route
           path="/profile"
           element={
@@ -93,6 +81,8 @@ function App() {
             </>
           }
         />
+
+        {/* Analytics */}
         <Route
           path="/analytics"
           element={
@@ -104,6 +94,8 @@ function App() {
             </>
           }
         />
+
+        {/* AI Chat */}
         <Route
           path="/AIChat"
           element={
@@ -115,6 +107,8 @@ function App() {
             </>
           }
         />
+
+        {/* Questionnaire */}
         <Route
           path="/Questionnaire"
           element={
@@ -126,6 +120,8 @@ function App() {
             </>
           }
         />
+
+        {/* Dashboard */}
         <Route
           path="/Dashboard"
           element={
@@ -133,6 +129,19 @@ function App() {
               <MiniNavbar />
               <Sidebar />
               <Dashboard />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* ✅ Life Management (Newly Added) */}
+        <Route
+          path="/LifeManagement"
+          element={
+            <>
+              <MiniNavbar />
+              <Sidebar />
+              <LifeManagement />
               <Footer />
             </>
           }
