@@ -1,6 +1,9 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import { AuthProvider } from "./context/AuthContext";
+import FinancialReportPage from "./Frontend/components/Dashboard/FinancialReportPage";
+
 import Login from "./Frontend/components/LOGIN&REGISTRATION/Login/Login";
 import Signup from "./Frontend/components/LOGIN&REGISTRATION/Signup/Signup";
 import Home from "./Frontend/components/Home/home";
@@ -19,151 +22,141 @@ import Contact from "./Frontend/components/Contact/contact";
 import LifeManagement from "./Frontend/components/Dashboard/lifemanagement";
 import StatisticsPage from "./Frontend/components/Dashboard/statistics";
 
-
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Home Page */}
-        <Route
-          path="/"
-          element={
-            <>
-              <NavBar />
-              <Home />
-              <Chatbot />
-              <Footer />
-            </>
-          }
-        />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Home */}
+          <Route
+            path="/"
+            element={
+              <>
+                <NavBar />
+                <Home />
+                <Chatbot />
+                <Footer />
+              </>
+            }
+          />
 
-        {/* Login Page */}
-        <Route
-          path="/login"
-          element={
-            <>
-              <MiniNavbar />
-              <Login />
-            </>
-          }
-        />
+          {/* Login */}
+          <Route
+            path="/login"
+            element={
+              <>
+                <MiniNavbar />
+                <Login />
+              </>
+            }
+          />
 
-        {/* Signup Page */}
-        <Route
-          path="/Signup"
-          element={
-            <>
-              <MiniNavbar />
-              <Signup />
-            </>
-          }
-        />
+          {/* Signup */}
+          <Route
+            path="/Signup"
+            element={
+              <>
+                <MiniNavbar />
+                <Signup />
+              </>
+            }
+          />
 
-        {/* Settings */}
-        <Route
-          path="/Settings"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <Settings />
-              <Footer />
-            </>
-          }
-        />
+          {/* Dashboard Pages */}
+          <Route
+            path="/Dashboard"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <Dashboard />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/Settings"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <Settings />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <Profile />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <AnalyticsReport />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/AIChat"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <AIChat />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/Questionnaire"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <Questionnaire />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/LifeManagement"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <LifeManagement />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/statistics"
+            element={
+              <>
+                <MiniNavbar />
+                <Sidebar />
+                <StatisticsPage />
+                <Footer />
+              </>
+            }
+          />
 
-        {/* Profile */}
-        <Route
-          path="/profile"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <Profile />
-              <Footer />
-            </>
-          }
-        />
-
-        {/* Analytics */}
-        <Route
-          path="/analytics"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <AnalyticsReport />
-              <Footer />
-            </>
-          }
-        />
-
-        {/* AI Chat */}
-        <Route
-          path="/AIChat"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <AIChat />
-              <Footer />
-            </>
-          }
-        />
-
-        {/* Questionnaire */}
-        <Route
-          path="/Questionnaire"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <Questionnaire />
-              <Footer />
-            </>
-          }
-        />
-
-        {/* Dashboard */}
-        <Route
-          path="/Dashboard"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <Dashboard />
-              <Footer />
-            </>
-          }
-        />
-
-        {/* ✅ Life Management (Newly Added) */}
-        <Route
-          path="/LifeManagement"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <LifeManagement />
-              <Footer />
-            </>
-          }
-        />
-
-        <Route
-          path="/statistics"
-          element={
-            <>
-              <MiniNavbar />
-              <Sidebar />
-              <StatisticsPage />
-              <Footer />
-            </>
-          }
-        />
-
-      </Routes>
-    </BrowserRouter>
+          {/* ✅ Clean Full Page for AI Report */}
+          <Route path="/financial-report" element={<FinancialReportPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
