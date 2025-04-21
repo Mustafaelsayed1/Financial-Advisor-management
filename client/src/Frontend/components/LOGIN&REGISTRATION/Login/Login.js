@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLogin } from "../../../../hooks/useLogin";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // ✅ React Icons (no Font Awesome)
 import "../../styles/login.css";
 
 const Login = () => {
@@ -17,7 +18,7 @@ const Login = () => {
     successMessage,
     isLoading,
     handleLogin,
-  } = useLogin(navigate); // Pass navigate into the hook 👈
+  } = useLogin(navigate);
 
   return (
     <div className="main-container">
@@ -41,22 +42,23 @@ const Login = () => {
             <div className="field password-container">
               <div className="field-wrapper">
                 <label htmlFor="password">Password:</label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="show-password"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <i
-                    className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}
-                  ></i>
-                </button>
+                <div className="password-wrapper">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  {password && (
+                    <span
+                      className="toggle-visibility"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
