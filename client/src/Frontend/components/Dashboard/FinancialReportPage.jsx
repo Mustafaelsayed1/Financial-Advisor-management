@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useLocation } from "react-router-dom";
 import FinancialReport from "./FinancialReport";
@@ -16,9 +17,6 @@ const FinancialReportPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* 🔥 Removed duplicate heading */}
-      {/* <h1 className="text-3xl font-bold text-blue-700 mb-4">📊 AI Financial Report</h1> */}
-
       <FinancialReport data={{ output: aiOutput }} />
     </div>
   );

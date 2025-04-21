@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "../../../context/AuthContext";
 import axios from "axios";
@@ -54,6 +55,8 @@ const LifeManagement = () => {
     setError("");
 
     try {
+      console.log("Sending data:", formData);  // Debugging line to check the data
+
       const response = await axios.post("http://localhost:5001/generate", {
         income: formData.income,
         rent: formData.rent,
@@ -66,7 +69,7 @@ const LifeManagement = () => {
       });
 
       const output = response.data.output || response.data;
-      console.log("✅ Gemini Output:", output);
+      console.log("✅ Backend response:", output);  // Debugging the output from backend
 
       navigate("/financial-report", { state: { output } });
     } catch (error) {
@@ -82,14 +85,29 @@ const LifeManagement = () => {
       <h2>Life Management Questionnaire</h2>
       <form onSubmit={handleSubmit}>
         <label>Total Monthly Income</label>
-        <input type="number" name="income" value={formData.income} onChange={handleChange} />
+        <input
+          type="number"
+          name="income"
+          value={formData.income}
+          onChange={handleChange}
+        />
 
         <h4>Fixed Monthly Bills</h4>
         <label>Rent / Mortgage</label>
-        <input type="number" name="rent" value={formData.rent} onChange={handleChange} />
+        <input
+          type="number"
+          name="rent"
+          value={formData.rent}
+          onChange={handleChange}
+        />
 
         <label>Utilities (Electricity, Water, Internet)</label>
-        <input type="number" name="utilities" value={formData.utilities} onChange={handleChange} />
+        <input
+          type="number"
+          name="utilities"
+          value={formData.utilities}
+          onChange={handleChange}
+        />
 
         <h4>Diet Plan</h4>
         <select name="dietPlan" value={formData.dietPlan} onChange={handleChange}>
@@ -135,17 +153,23 @@ const LifeManagement = () => {
               type="text"
               placeholder="Expense Name"
               value={expense.name}
-              onChange={(e) => handleCustomExpenseChange(index, "name", e.target.value)}
+              onChange={(e) =>
+                handleCustomExpenseChange(index, "name", e.target.value)
+              }
             />
             <input
               type="number"
               placeholder="Amount"
               value={expense.amount}
-              onChange={(e) => handleCustomExpenseChange(index, "amount", e.target.value)}
+              onChange={(e) =>
+                handleCustomExpenseChange(index, "amount", e.target.value)
+              }
             />
           </div>
         ))}
-        <button type="button" onClick={addCustomExpense}>+ Add Expense</button>
+        <button type="button" onClick={addCustomExpense}>
+          + Add Expense
+        </button>
         <br />
         <button type="submit" disabled={loading}>
           {loading ? "Submitting..." : "Submit"}
