@@ -6,7 +6,7 @@ import json
 app = Flask(__name__)
 
 # ✅ Use your actual DeepSeek API key here
-api_key = "sk-92081781ef4c4a4598bb06967fb588fe"
+api_key = 
 openai_client = openai.OpenAI(
     api_key=api_key,
     base_url="https://api.deepseek.com/v1"  # ✅ Must include /v1
