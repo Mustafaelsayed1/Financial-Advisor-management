@@ -1,0 +1,23 @@
+/* financialReport.css */
+.text-gray-700 {
+    font-size: 1.125rem; /* Adjusts font size for readability */
+  }
+  
+  .bg-blue-50 {
+    background-color: #eff6ff; /* Light blue for summary background */
+  }
+  
+  .bg-green-50 {
+    background-color: #f0fdf4; /* Light green for advice background */
+  }
+  
+  p, div {
+    margin-bottom: 20px; /* Spacing between sections */
+  }
+  
+  footer {
+    margin-top: 40px;
+    font-size: 0.875rem;
+    color: #4a5568;
+  }
+  

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "../../../context/AuthContext";
 import axios from "axios";
-import { Table } from "react-bootstrap";
 import './lifemanagement.css';
 import { useNavigate } from "react-router-dom";
 
@@ -12,21 +11,13 @@ const LifeManagement = () => {
 
   const [formData, setFormData] = useState({
     income: "",
-    otherIncome: "",
     rent: "",
     utilities: "",
-    loans: "",
-    groceries: "",
-    dining: "",
-    usesTransport: false,
+    dietPlan: "",
     transportCost: "",
     otherRecurring: "",
-    savesMoney: "",
     savingAmount: "",
-    biggestSpending: "",
-    financialGoals: [],
     customExpenses: [{ name: "", amount: "" }],
-    dietPlan: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,16 +33,6 @@ const LifeManagement = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-  };
-
-  const handleGoalToggle = (goal) => {
-    setFormData((prev) => {
-      const alreadySelected = prev.financialGoals.includes(goal);
-      const newGoals = alreadySelected
-        ? prev.financialGoals.filter((g) => g !== goal)
-        : [...prev.financialGoals, goal];
-      return { ...prev, financialGoals: newGoals };
-    });
   };
 
   const handleCustomExpenseChange = (index, field, value) => {
@@ -73,19 +54,23 @@ const LifeManagement = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:4000/api/lifemanagement", {
-        userId: user._id,
-        ...formData,
+      const response = await axios.post("http://localhost:5001/generate", {
+        income: formData.income,
+        rent: formData.rent,
+        utilities: formData.utilities,
+        dietPlan: formData.dietPlan,
+        transportCost: formData.transportCost,
+        otherRecurring: formData.otherRecurring,
+        savingAmount: formData.savingAmount,
+        customExpenses: formData.customExpenses,
       });
 
-      const output = response.data.lifeGoals;
-      console.log("✅ AI Output:", output);
+      const output = response.data.output || response.data;
+      console.log("✅ Gemini Output:", output);
 
-      navigate("/financial-report", {
-        state: { output },
-      });
+      navigate("/financial-report", { state: { output } });
     } catch (error) {
-      console.error("Submission error:", error);
+      console.error("❌ Submission error:", error);
       setError("Error submitting data. Please try again later.");
     } finally {
       setLoading(false);
@@ -131,7 +116,7 @@ const LifeManagement = () => {
           name="otherRecurring"
           value={formData.otherRecurring}
           onChange={handleChange}
-          placeholder="e.g., Gym, Subscriptions"
+          placeholder="e.g., Gym, Phone, Netflix"
         />
 
         <h4>Savings</h4>
