@@ -4,8 +4,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import FinancialReportPage from "./Frontend/components/Dashboard/FinancialReportPage";
 
-
-
 import Login from "./Frontend/components/LOGIN&REGISTRATION/Login/Login";
 import Signup from "./Frontend/components/LOGIN&REGISTRATION/Signup/Signup";
 import Home from "./Frontend/components/Home/home";
@@ -23,13 +21,17 @@ import AIChat from "./Frontend/components/chatbot/AIChat";
 import Contact from "./Frontend/components/Contact/contact";
 import LifeManagement from "./Frontend/components/Dashboard/lifemanagement";
 import StatisticsPage from "./Frontend/components/Dashboard/statistics";
+import AdminDashboard from "./Frontend/components/Dashboard/AdminDashboard";
+import UserDetails from "./Frontend/components/Dashboard/UserDetails";
+import ProtectedRoute from "./Frontend/components/Auth/ProtectedRoute";
+import AdminRoute from "./Frontend/components/Auth/AdminRoute";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Home */}
+          {/* Home Page */}
           <Route
             path="/"
             element={
@@ -42,7 +44,7 @@ function App() {
             }
           />
 
-          {/* Login */}
+          {/* Login Page */}
           <Route
             path="/login"
             element={
@@ -53,7 +55,7 @@ function App() {
             }
           />
 
-          {/* Signup */}
+          {/* Signup Page */}
           <Route
             path="/Signup"
             element={
@@ -64,98 +66,132 @@ function App() {
             }
           />
 
-          {/* Dashboard Pages */}
+          {/* Protected User Routes */}
           <Route
             path="/Dashboard"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <Dashboard />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Dashboard />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/Settings"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <Settings />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Settings />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/profile"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <Profile />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Profile />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/analytics"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <AnalyticsReport />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <AnalyticsReport />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/AIChat"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <AIChat />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <AIChat />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/Questionnaire"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <Questionnaire />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Questionnaire />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/LifeManagement"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <LifeManagement />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <LifeManagement />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/statistics"
             element={
-              <>
-                <MiniNavbar />
-                <Sidebar />
-                <StatisticsPage />
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <StatisticsPage />
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
 
-          {/* ✅ Clean Full Page for AI Report */}
+          {/* AI Report Page */}
           <Route path="/financial-report" element={<FinancialReportPage />} />
+
+          {/* Admin Pages */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users/:id"
+            element={
+              <AdminRoute>
+                <UserDetails />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
@@ -163,4 +199,3 @@ function App() {
 }
 
 export default App;
-
