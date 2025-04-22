@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import User from "../models/UserModel.js";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 const JWT_SECRET = '6dsb&c~HYAx3K787,5.K2lK*EA*h|9C-6Y,$.jiKS1s9lTE5^bPN$>+~';
@@ -94,9 +95,14 @@ export const loginUser = async (req, res) => {
   try {
     console.log(`Attempting login for email: ${email}`);
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+if (!user) {
+  return res.status(404).json({ message: "User not found" });
+}
+
+if (user.blocked) {
+  return res.status(403).json({ message: "Your account has been blocked by the admin." });
+}
+
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -231,5 +237,65 @@ export const deleteUser = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const toggleBlockStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.blocked = !user.blocked;
+    await user.save();
+
+    res.json({ success: true, blocked: user.blocked });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to toggle block status" });
+  }
+};
+
+// controller/usercontroller.js
+export const updateLoginMeta = async (req, res) => {
+  const { email } = req.body;
+  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+  try {
+    const user = await User.findOneAndUpdate(
+      { email },
+      {
+        $set: { lastLogin: new Date(), lastIP: ip },
+        $push: {
+          activityLog: {
+            action: "Login",
+            timestamp: new Date(),
+          },
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error updating login metadata" });
+  }
+};
+
+
+export const updateUserRole = async (req, res) => {
+  const { id } = req.params;
+  const { newRole } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.role = newRole;
+    await user.save();
+
+    res.json({ success: true, message: "Role updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update role" });
   }
 };
