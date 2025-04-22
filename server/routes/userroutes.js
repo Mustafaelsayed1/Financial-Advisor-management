@@ -10,6 +10,8 @@ import {
   deleteUser,
   upload,
   toggleBlockStatus,
+  updateLoginMeta,
+  updateUserRoleOrPassword,
 } from "../controller/usercontroller.js";
 
 import { auth, authorizeRoles } from "../Middleware/authMiddleware.js";
