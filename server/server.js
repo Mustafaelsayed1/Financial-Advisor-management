@@ -1,6 +1,7 @@
 // ✅ Existing imports...
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import mongoose from "mongoose";
@@ -23,11 +24,12 @@ import chatRoutes from "./routes/chatRoutes.js";
 import questionnaireRoutes from "./routes/questionnaireRoutes.js";
 import analyticsRoutes from "./routes/analyticRoutes.js";
 
+
+
 // ✅ Resolve __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
