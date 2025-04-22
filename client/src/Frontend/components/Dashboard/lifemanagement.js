@@ -181,4 +181,4 @@ const LifeManagement = () => {
   );
 };
 
-
+export default LifeManagement;
