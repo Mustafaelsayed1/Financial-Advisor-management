@@ -1,109 +1,232 @@
-import { useState, useEffect, useRef } from "react";
-import { useAuthContext } from "../../../context/AuthContext"; // Import AuthContext for user ID
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCommentDots,
+  faPaperPlane,
+  faTimes,
+  faRobot,
+  faCircle,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import "../styles/chat.css";
-
-const API_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:4000/api/chat/chat";
+import logo from "../../../assets/img/latest_logo.svg";
 
 const Chatbot = () => {
-  const { user } = useAuthContext(); // Get logged-in user
-  const [messages, setMessages] = useState([]); // ✅ Use local state
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const chatEndRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Load chat history from local storage on mount
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const chatMessagesRef = useRef(null);
+
+  // Scroll to bottom of messages container
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Focus input field when chat is opened
   useEffect(() => {
-    const savedChat = localStorage.getItem("chatHistory");
-    if (savedChat) {
-      setMessages(JSON.parse(savedChat)); // Restore messages from storage
+    if (isChatOpen) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
     }
-  }, []);
+  }, [isChatOpen]);
 
-  // ✅ Save chat history to local storage when messages change
+  // Scroll to bottom whenever messages change
   useEffect(() => {
-    localStorage.setItem("chatHistory", JSON.stringify(messages));
+    scrollToBottom();
   }, [messages]);
 
-  // ✅ Scroll to the latest message
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // Toggle chat visibility
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
 
-  // ✅ Handle sending messages
+  // Handle input change
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  // Handle message submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
 
-    console.log("🔍 Sending message:", input);
-    console.log("🔍 User ID:", user?._id);
+    if (!inputValue.trim()) return;
 
-    const userMessage = { text: input, sender: "user" };
-    setMessages((prevMessages) => [...prevMessages, userMessage]); // Add user message
-    setInput("");
-    setLoading(true);
+    // Add user message
+    const userMessage = {
+      text: inputValue.trim(),
+      sender: "user",
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setIsLoading(true);
 
     try {
-      console.log("Sending Token:", user?.token); // DEBUGGING
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          message: input,
-          userId: user?._id || null,
-        }),
+      // Make API request to backend
+      const response = await axios.post("/api/chat", {
+        message: userMessage.text,
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
+      const botMessage = {
+        text:
+          response.data.message ||
+          "I'm sorry, I couldn't process your request at this time.",
+        sender: "bot",
+        timestamp: new Date().toISOString(),
+      };
 
-      const data = await response.json();
-      const botMessage = { text: data.response, sender: "bot" };
-
-      setMessages((prevMessages) => [...prevMessages, botMessage]); // Add bot response
+      // Add bot response after a small delay to simulate typing
+      setTimeout(() => {
+        setMessages((prev) => [...prev, botMessage]);
+        setIsLoading(false);
+      }, 800);
     } catch (error) {
-      console.error("Chatbot API Error:", error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          text: "❌ Error fetching response. Please try again.",
-          sender: "bot",
-        },
-      ]);
-    } finally {
-      setLoading(false);
+      console.error("Error sending message:", error);
+
+      // Add error message
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: "I'm having trouble connecting to my services. Please try again later.",
+            sender: "bot",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+        setIsLoading(false);
+      }, 800);
+    }
+  };
+
+  // Handle keyboard events (Enter to send, Shift+Enter for new line)
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
     }
   };
 
   return (
-    <div className="chat-container">
-      <div className="chat-messages">
-        {messages.map((msg, index) => (
-          <div key={index} className={`message ${msg.sender}-message`}>
-            <span dangerouslySetInnerHTML={{ __html: msg.text }} />
-          </div>
-        ))}
-        <div ref={chatEndRef} /> {/* Ensures auto-scroll */}
-      </div>
+    <div className="chatbot-wrapper">
+      {/* Chat toggle button */}
+      <button
+        className={`chat-toggle-btn ${isChatOpen ? "active" : ""}`}
+        onClick={toggleChat}
+        aria-label={isChatOpen ? "Close chat" : "Open chat assistant"}
+      >
+        <FontAwesomeIcon icon={faCommentDots} />
+        <span className="chat-toggle-text">Chat with Us</span>
+      </button>
 
-      <form onSubmit={handleSubmit} className="chat-form">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="chat-input"
-          placeholder="Ask a financial question..."
-          disabled={loading}
-        />
-        <button type="submit" className="chat-button" disabled={loading}>
-          {loading ? "Thinking..." : "Send"}
-        </button>
-      </form>
+      {/* Chat container */}
+      <div className={`chatbot-container ${isChatOpen ? "open" : "closed"}`}>
+        {/* Chat header */}
+        <div className="chat-header">
+          <div className="chat-title">
+            <div className="chat-avatar">
+              <img src={logo} alt="AI Assistant" />
+            </div>
+            <div>
+              <h5>Financial Assistant</h5>
+              <p className="chat-status">
+                <FontAwesomeIcon icon={faCircle} className="status-icon" />{" "}
+                Online
+              </p>
+            </div>
+          </div>
+          <button
+            className="chat-close-btn"
+            onClick={toggleChat}
+            aria-label="Close chat"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </div>
+
+        {/* Chat messages */}
+        <div className="chat-messages-container" ref={chatMessagesRef}>
+          {messages.length === 0 ? (
+            <div className="chat-welcome">
+              <img src={logo} alt="AI Assistant" className="welcome-image" />
+              <h4>Welcome to Financial AI Advisor!</h4>
+              <p>
+                Ask me anything about financial planning, investments, market
+                trends, or getting personalized financial advice.
+              </p>
+            </div>
+          ) : (
+            messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`message-row ${
+                  msg.sender === "user" ? "user-row" : "bot-row"
+                }`}
+              >
+                <div className="message-avatar">
+                  <FontAwesomeIcon
+                    icon={msg.sender === "user" ? faUser : faRobot}
+                    size="sm"
+                  />
+                </div>
+                <div
+                  className={`message ${
+                    msg.sender === "user" ? "user-message" : "bot-message"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            ))
+          )}
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="message-row bot-row">
+              <div className="message-avatar">
+                <FontAwesomeIcon icon={faRobot} size="sm" />
+              </div>
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input form */}
+        <form className="chat-form" onSubmit={handleSubmit}>
+          <div className="chat-input-container">
+            <textarea
+              className="chat-input"
+              placeholder="Type your message..."
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              ref={inputRef}
+              rows="1"
+              aria-label="Message input"
+            ></textarea>
+            <button
+              className="chat-send-btn"
+              type="submit"
+              disabled={!inputValue.trim()}
+              aria-label="Send message"
+            >
+              <FontAwesomeIcon icon={faPaperPlane} size="sm" />
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
