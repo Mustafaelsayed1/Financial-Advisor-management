@@ -5,6 +5,7 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 from services.agent.agent import financial_agent  # Import AI agent logic
+import logging
 
 # ✅ Load environment variables
 load_dotenv(".env")
@@ -50,15 +51,30 @@ def forecast(request: ForecastRequest):
 # ✅ AI Chat Endpoint
 @app.post("/api/chat")
 def chat_with_ai(request: ChatRequest):
-    """Handles AI financial chat responses."""
-    if not request.userId or not request.salary or not request.message:
-        raise HTTPException(status_code=400, detail="Missing userId, salary, or message")
-
+    """Handles AI financial chat responses with improved human-like interaction."""
+    # Validate required fields
+    if not request.message:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    # Set default values if not provided
+    user_id = request.userId if hasattr(request, 'userId') and request.userId else "anonymous"
+    salary = request.salary if hasattr(request, 'salary') and request.salary else 60000
+    
     try:
-        response = financial_agent(request.userId, request.salary, request.message)
+        # Log the incoming request for monitoring
+        logging.info(f"Chat request received from user {user_id[:5]}***")
+        
+        # Get response from the financial agent
+        response = financial_agent(user_id, salary, request.message)
+        
+        # Return the enhanced, human-like response
         return {"response": response}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI Processing Error: {str(e)}")
+        logging.error(f"Error in chat endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail="I'm having trouble processing your request at the moment. Could you try again in a little while?"
+        )
 
 # ✅ Home Route
 @app.get("/")

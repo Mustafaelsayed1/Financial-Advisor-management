@@ -34,6 +34,69 @@ const faqs = {
     "📋 Track your expenses and allocate your income into savings, needs, and wants.",
 };
 
+// **Add more human-like response templates**
+const personalityTraits = {
+  friendly: [
+    "I'm happy to help you with that!",
+    "Great question! Let me find that information for you.",
+    "I'd be delighted to assist with your financial query.",
+    "That's something I can definitely help with.",
+    "Thanks for asking! Here's what I found:",
+  ],
+  thoughtful: [
+    "Let me think about that for a moment...",
+    "That's an interesting financial question. Here's my analysis:",
+    "I need to consider a few factors before answering that...",
+    "From a financial perspective, here's what I think:",
+    "After analyzing your question carefully...",
+  ],
+  empathetic: [
+    "I understand financial matters can be stressful. Here's some helpful information:",
+    "Many people have similar financial concerns. Let me help clarify this for you:",
+    "It's normal to have questions about this. Here's what you should know:",
+    "I appreciate you sharing your financial concerns with me.",
+    "That's a common financial challenge. Here's my advice:",
+  ],
+};
+
+// **Context memory for recent conversations**
+const conversationMemory = new Map();
+const MAX_MEMORY_SIZE = 5;
+
+// **Get a random response template based on sentiment and message content**
+const getPersonalizedIntro = (message, sentimentScore) => {
+  if (sentimentScore < -1) {
+    // Negative sentiment
+    return personalityTraits.empathetic[
+      Math.floor(Math.random() * personalityTraits.empathetic.length)
+    ];
+  } else if (/how|what|why|when|which|where/i.test(message)) {
+    // Question
+    return personalityTraits.thoughtful[
+      Math.floor(Math.random() * personalityTraits.thoughtful.length)
+    ];
+  } else {
+    // Neutral or positive
+    return personalityTraits.friendly[
+      Math.floor(Math.random() * personalityTraits.friendly.length)
+    ];
+  }
+};
+
+// **Add follow-up suggestions based on the conversation topic**
+const getFollowUpSuggestions = (message) => {
+  if (/stock|invest|market|portfolio/i.test(message)) {
+    return "\n\n💡 You might also want to ask about:\n• Portfolio diversification strategies\n• Market trends for specific sectors\n• How to evaluate stock performance";
+  } else if (/save|saving|budget|spend/i.test(message)) {
+    return "\n\n💡 You might also want to ask about:\n• The 50/30/20 budgeting rule\n• High-yield savings options\n• Automating your savings";
+  } else if (/retire|retirement|401k|pension/i.test(message)) {
+    return "\n\n💡 You might also want to ask about:\n• Retirement account types\n• When to start saving for retirement\n• Retirement withdrawal strategies";
+  } else if (/debt|loan|credit|mortgage/i.test(message)) {
+    return "\n\n💡 You might also want to ask about:\n• Debt consolidation options\n• Strategies to improve credit score\n• Comparing loan interest rates";
+  }
+  return "";
+};
+
 // **Fetch Crypto Price from Binance**
 const fetchCryptoPrice = async (symbol) => {
   try {
@@ -176,7 +239,7 @@ const fetchFinanceNews = async () => {
   }
 };
 
-// **Chatbot Handler**
+// **Chatbot Handler with improved human-like interaction**
 export const handleChatRequest = async (req, res) => {
   const { message } = req.body;
   const userId = req.user ? req.user._id : null;
@@ -187,19 +250,67 @@ export const handleChatRequest = async (req, res) => {
 
   const lowerMessage = message.toLowerCase().trim();
 
-  if (faqs[lowerMessage]) return res.json({ response: faqs[lowerMessage] });
+  // Check for exact FAQ matches
+  if (faqs[lowerMessage]) {
+    const response = faqs[lowerMessage];
+
+    // Store in conversation memory
+    if (userId) {
+      if (!conversationMemory.has(userId)) {
+        conversationMemory.set(userId, []);
+      }
+      const userMemory = conversationMemory.get(userId);
+      userMemory.push({ message, response });
+      if (userMemory.length > MAX_MEMORY_SIZE) userMemory.shift();
+    }
+
+    return res.json({ response });
+  }
 
   try {
-    const sentimentResult = sentiment.analyze(message);
-    const sentimentLabel =
-      sentimentResult.score > 0
-        ? "😊 Positive"
-        : sentimentResult.score < 0
-        ? "😞 Negative"
-        : "😐 Neutral";
+    // Get conversation context if available
+    let contextAwareness = "";
+    if (userId && conversationMemory.has(userId)) {
+      const userMemory = conversationMemory.get(userId);
+      if (userMemory.length > 0) {
+        // Reference previous conversation if relevant
+        const lastExchange = userMemory[userMemory.length - 1];
+        if (
+          message.includes("that") ||
+          message.includes("it") ||
+          message.length < 15
+        ) {
+          contextAwareness = `I see you're following up on our conversation about ${lastExchange.message.substring(
+            0,
+            30
+          )}... `;
+        }
+      }
+    }
 
-    let responseText = `🔍 **Sentiment Analysis**: ${sentimentLabel}\n🧐 **Analyzing financial data for**: ${message}`;
+    const sentimentResult = sentiment.analyze(message);
+
+    // Start with personalized intro based on message sentiment and content
+    const personalizedIntro = getPersonalizedIntro(
+      message,
+      sentimentResult.score
+    );
+
+    let responseText = `${contextAwareness}${personalizedIntro}\n\n`;
     let foundRelevantData = false;
+
+    // Only include sentiment analysis for certain types of messages
+    if (
+      /feeling|think|opinion|market outlook|future|predict/i.test(lowerMessage)
+    ) {
+      const sentimentLabel =
+        sentimentResult.score > 0
+          ? "😊 positive"
+          : sentimentResult.score < 0
+          ? "😞 negative"
+          : "😐 neutral";
+      responseText += `I'm sensing a ${sentimentLabel} tone in your message. `;
+    }
 
     if (/btc|eth|crypto price/i.test(lowerMessage)) {
       const cryptoSymbol =
@@ -231,14 +342,37 @@ export const handleChatRequest = async (req, res) => {
       foundRelevantData = true;
     }
 
-    if (!foundRelevantData)
-      responseText += `\n💡 **Financial Tip**: ${
+    if (!foundRelevantData) {
+      // Add a conversational element when giving general advice
+      const randomIntro = [
+        "Based on my financial expertise, ",
+        "As your financial advisor, I'd suggest that ",
+        "Many of my clients find it helpful to know that ",
+        "Here's a valuable financial insight: ",
+        "From what I understand about your situation, ",
+      ][Math.floor(Math.random() * 5)];
+
+      responseText += `${randomIntro}${
         financialTips[Math.floor(Math.random() * financialTips.length)]
       }`;
+    }
 
-    // **Save chat to MongoDB, including userId if found**
+    // Add follow-up suggestions based on the topic
+    responseText += getFollowUpSuggestions(message);
+
+    // Store in conversation memory
+    if (userId) {
+      if (!conversationMemory.has(userId)) {
+        conversationMemory.set(userId, []);
+      }
+      const userMemory = conversationMemory.get(userId);
+      userMemory.push({ message, response: responseText });
+      if (userMemory.length > MAX_MEMORY_SIZE) userMemory.shift();
+    }
+
+    // Save chat to MongoDB
     const chatEntry = new ChatModel({
-      userId: userId, // Store user ID if available, otherwise set to null
+      userId: userId,
       message,
       response: responseText,
     });
@@ -247,7 +381,10 @@ export const handleChatRequest = async (req, res) => {
     res.json({ response: responseText });
   } catch (error) {
     console.error("Error processing request:", error);
-    res.status(500).json({ response: "⚠️ Error fetching financial data." });
+    res.status(500).json({
+      response:
+        "I'm sorry, but I'm having trouble retrieving the financial data you need right now. Could we try again in a moment?",
+    });
   }
 };
 
@@ -278,9 +415,59 @@ export const getChatByID = async (req, res) => {
 
 export const getChatsByUser = async (req, res) => {
   try {
-    const chats = await AIChat.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    const chats = await AIChat.find({ userId: req.params.userId }).sort({
+      createdAt: -1,
+    });
     res.json(chats);
   } catch (err) {
     res.status(500).json({ message: "Error fetching chat logs" });
+  }
+};
+
+// **Export getChatContextByUser to retrieve conversation context**
+export const getChatContextByUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    // Get recent chats for context
+    const recentChats = await ChatModel.find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(5)
+      .select("message response timestamp")
+      .lean();
+
+    if (!recentChats || recentChats.length === 0) {
+      return res.json({
+        context: [],
+        contextSummary: "No previous conversation context available.",
+      });
+    }
+
+    // Create a summary of previous conversations
+    const contextSummary =
+      recentChats.length > 0
+        ? `Previous discussions include: ${recentChats
+            .map(
+              (chat) =>
+                chat.message.substring(0, 30) +
+                (chat.message.length > 30 ? "..." : "")
+            )
+            .join(", ")}`
+        : "No previous conversation context available.";
+
+    // Return both structured context data and a natural language summary
+    return res.json({
+      context: recentChats.reverse(), // Chronological order
+      contextSummary,
+    });
+  } catch (error) {
+    console.error("Error retrieving chat context:", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to retrieve chat context." });
   }
 };

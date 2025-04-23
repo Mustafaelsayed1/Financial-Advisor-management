@@ -8,6 +8,7 @@ import {
   faRobot,
   faCircle,
   faUser,
+  faUserTie,
 } from "@fortawesome/free-solid-svg-icons";
 import "../styles/chat.css";
 import logo from "../../../assets/img/latest_logo.svg";
@@ -17,6 +18,10 @@ const Chatbot = () => {
   const [inputValue, setInputValue] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [typingStage, setTypingStage] = useState(0);
+  const [displayedResponse, setDisplayedResponse] = useState("");
+  const [fullResponse, setFullResponse] = useState("");
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -39,7 +44,54 @@ const Chatbot = () => {
   // Scroll to bottom whenever messages change
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, displayedResponse]);
+
+  // Handle typing effect
+  useEffect(() => {
+    if (typingStage === 1 && fullResponse) {
+      // Calculate typing speed based on message length (faster for shorter messages)
+      const messageLength = fullResponse.length;
+      const baseDelay = Math.min(80, Math.max(20, 100 - messageLength / 10));
+
+      // Break typing into chunks for more realistic effect
+      const typingInterval = setInterval(() => {
+        setDisplayedResponse((prev) => {
+          if (prev.length < fullResponse.length) {
+            // Add 1-4 characters at a time for more natural typing
+            const chunkSize = Math.floor(Math.random() * 4) + 1;
+            const nextChunk = fullResponse.substring(
+              prev.length,
+              prev.length + chunkSize
+            );
+            return prev + nextChunk;
+          } else {
+            clearInterval(typingInterval);
+
+            // After finishing typing, add message to the chat and reset states
+            setTimeout(() => {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  text: fullResponse,
+                  sender: "bot",
+                  timestamp: new Date().toISOString(),
+                },
+              ]);
+
+              setTypingStage(0);
+              setFullResponse("");
+              setDisplayedResponse("");
+              setIsLoading(false);
+            }, 300); // Small delay after typing completes
+
+            return prev;
+          }
+        });
+      }, baseDelay);
+
+      return () => clearInterval(typingInterval);
+    }
+  }, [typingStage, fullResponse]);
 
   // Toggle chat visibility
   const toggleChat = () => {
@@ -69,39 +121,48 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      // Make API request to backend
+      // Make API request to backend - ensure we're using the correct endpoint
       const response = await axios.post("/api/chat", {
         message: userMessage.text,
+        userId: "anonymous", // Add userId parameter for better context handling
+        salary: 60000, // Default salary for financial context
       });
 
-      const botMessage = {
-        text:
-          response.data.message ||
-          "I'm sorry, I couldn't process your request at this time.",
-        sender: "bot",
-        timestamp: new Date().toISOString(),
-      };
+      // Extract bot response text
+      const responseText =
+        response.data.response ||
+        "I'm sorry, I couldn't process your request at this time.";
 
-      // Add bot response after a small delay to simulate typing
-      setTimeout(() => {
-        setMessages((prev) => [...prev, botMessage]);
-        setIsLoading(false);
-      }, 800);
+      // Calculate a simulated "thinking" delay based on message complexity
+      const messageLength = userMessage.text.length;
+      const responseLength = responseText.length;
+      const thinkingTime = Math.min(3000, Math.max(800, messageLength * 50));
+
+      // Set the full response text but don't display immediately
+      setFullResponse(responseText);
+
+      // Simulate AI "thinking" with delay before typing starts
+      clearTimeout(typingTimeout);
+      const timeout = setTimeout(() => {
+        setTypingStage(1); // Start typing animation
+      }, thinkingTime);
+
+      setTypingTimeout(timeout);
     } catch (error) {
       console.error("Error sending message:", error);
 
-      // Add error message
+      // Add error message after a thinking delay
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
           {
-            text: "I'm having trouble connecting to my services. Please try again later.",
+            text: "I'm having trouble connecting to my services right now. Could you please try again in a moment?",
             sender: "bot",
             timestamp: new Date().toISOString(),
           },
         ]);
         setIsLoading(false);
-      }, 800);
+      }, 1500);
     }
   };
 
@@ -131,7 +192,7 @@ const Chatbot = () => {
         <div className="chat-header">
           <div className="chat-title">
             <div className="chat-avatar">
-              <img src={logo} alt="AI Assistant" />
+              <img src={logo} alt="Financial Assistant" />
             </div>
             <div>
               <h5>Financial Assistant</h5>
@@ -154,7 +215,11 @@ const Chatbot = () => {
         <div className="chat-messages-container" ref={chatMessagesRef}>
           {messages.length === 0 ? (
             <div className="chat-welcome">
-              <img src={logo} alt="AI Assistant" className="welcome-image" />
+              <img
+                src={logo}
+                alt="Financial Assistant"
+                className="welcome-image"
+              />
               <h4>Welcome to Financial AI Advisor!</h4>
               <p>
                 Ask me anything about financial planning, investments, market
@@ -171,7 +236,7 @@ const Chatbot = () => {
               >
                 <div className="message-avatar">
                   <FontAwesomeIcon
-                    icon={msg.sender === "user" ? faUser : faRobot}
+                    icon={msg.sender === "user" ? faUser : faUserTie}
                     size="sm"
                   />
                 </div>
@@ -186,17 +251,24 @@ const Chatbot = () => {
             ))
           )}
 
-          {/* Loading indicator */}
+          {/* Active typing indicator */}
           {isLoading && (
             <div className="message-row bot-row">
               <div className="message-avatar">
-                <FontAwesomeIcon icon={faRobot} size="sm" />
+                <FontAwesomeIcon icon={faUserTie} size="sm" />
               </div>
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+              {typingStage === 0 ? (
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              ) : (
+                <div className="message bot-message typing-message">
+                  {displayedResponse}
+                  <span className="typing-cursor"></span>
+                </div>
+              )}
             </div>
           )}
 
@@ -215,11 +287,12 @@ const Chatbot = () => {
               ref={inputRef}
               rows="1"
               aria-label="Message input"
+              disabled={isLoading}
             ></textarea>
             <button
               className="chat-send-btn"
               type="submit"
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || isLoading}
               aria-label="Send message"
             >
               <FontAwesomeIcon icon={faPaperPlane} size="sm" />

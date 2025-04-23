@@ -234,6 +234,145 @@ def fine_tune_llama():
     logger.info("🎉 Fine-tuning completed successfully!")
 
 # -----------------------------------------------------------------------------
+# IMPROVED RESPONSE GENERATION
+# -----------------------------------------------------------------------------
+
+def preprocess_prompt(message, user_id, salary):
+    """
+    Creates a more natural conversation starter with context for better responses.
+    
+    Args:
+        message: The user's message
+        user_id: User identifier for personalization
+        salary: User's salary for financial context
+    
+    Returns:
+        A properly formatted prompt for the model
+    """
+    income_level = "low" if salary < 50000 else "moderate" if salary < 100000 else "high"
+    persona = (
+        "You are an empathetic, helpful financial advisor with years of experience helping people manage their finances. "
+        "You are talking to a real person with real financial concerns, so be thoughtful and considerate. "
+        f"This person has a {income_level} income level (${salary}/year). "
+        "Keep your responses conversational, warm, and avoid being overly formal or robotic. "
+        "Use simple language and avoid jargon unless explaining a specific financial concept. "
+        "If you're uncertain, it's okay to acknowledge limitations rather than making up information. "
+        "Occasionally ask clarifying questions if that would help provide better advice."
+    )
+    
+    # Classify the type of financial query
+    query_type = "general"
+    if any(term in message.lower() for term in ["invest", "stock", "bond", "etf", "fund", "portfolio"]):
+        query_type = "investment"
+    elif any(term in message.lower() for term in ["save", "saving", "emergency", "budget"]):
+        query_type = "saving"
+    elif any(term in message.lower() for term in ["debt", "loan", "credit", "mortgage"]):
+        query_type = "debt"
+    elif any(term in message.lower() for term in ["retire", "retirement", "401k", "ira"]):
+        query_type = "retirement"
+    
+    context = {
+        "investment": (
+            "Consider their income level when making investment recommendations. "
+            "Suggest lower-risk options for those with less financial security."
+        ),
+        "saving": (
+            "Recommend saving 3-6 months of expenses for emergency funds. "
+            "Suggest specific percentages based on their income level."
+        ),
+        "debt": (
+            "Prioritize high-interest debt payoff. "
+            "Be sensitive that debt can be a stressful topic."
+        ),
+        "retirement": (
+            "Consider their current income when making retirement suggestions. "
+            "Explain concepts like compound interest in simple terms."
+        ),
+        "general": (
+            "Provide balanced advice that considers their financial situation. "
+            "When appropriate, suggest resources for further learning."
+        )
+    }
+    
+    # Format the final prompt
+    formatted_prompt = f"{persona}\n\nCONVERSATION CONTEXT:\n{context[query_type]}\n\nUser: {message}\n\nFinancial Advisor:"
+    
+    return formatted_prompt
+
+def generate_response(prompt, user_id="anonymous", salary=60000):
+    """
+    Generates a more human-like response using the LLaMA model with improved parameters.
+    
+    Args:
+        prompt: The user's message
+        user_id: User identifier for personalization
+        salary: User's salary for financial context
+        
+    Returns:
+        A natural, conversational response
+    """
+    # Enhance the prompt with context and persona
+    enhanced_prompt = preprocess_prompt(prompt, user_id, salary)
+    
+    # Load model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_MODEL_PATH)
+    model = AutoModelForCausalLM.from_pretrained(FINE_TUNED_MODEL_PATH).to(device)
+    
+    # Tokenize input
+    inputs = tokenizer(enhanced_prompt, return_tensors="pt").to(device)
+    
+    # Generate with improved parameters for more natural text
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_length=800,              # Allow longer responses for complex financial advice
+            min_length=100,              # Ensure substantive responses
+            do_sample=True,              # Enable sampling for more natural text
+            temperature=0.8,             # Slightly higher temperature for creativity
+            top_p=0.92,                  # Nucleus sampling for diverse responses
+            top_k=50,                    # Limit vocabulary to prevent nonsense
+            repetition_penalty=1.2,      # Discourage repetitive text
+            no_repeat_ngram_size=3,      # Prevent repeating the same phrases
+            early_stopping=True          # Stop when complete
+        )
+    
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    # Extract just the assistant's response
+    if "Financial Advisor:" in response:
+        response = response.split("Financial Advisor:")[1].strip()
+    
+    # Add a friendly touch for certain queries
+    if "thank" in prompt.lower():
+        response += "\n\nIs there anything else I can help you with today?"
+    
+    return response
+
+# Create a function to serve as the main entry point for financial advice
+def financial_agent(user_id, salary, message):
+    """
+    Main entry point for the financial AI agent.
+    
+    Args:
+        user_id: User identifier
+        salary: User's salary 
+        message: User's message/query
+        
+    Returns:
+        A human-like financial advice response
+    """
+    try:
+        # Generate response with the enhanced parameters
+        response = generate_response(message, user_id, float(salary))
+        
+        # Log interaction for improvement
+        logger.info(f"Generated response for user {user_id[:5]}*** (Success)")
+        return response
+    except Exception as e:
+        logger.error(f"Error generating response: {e}")
+        return "I apologize, but I'm having trouble processing your request right now. Could you try asking in a different way, or perhaps try again in a moment?"
+
+# -----------------------------------------------------------------------------
 # FASTAPI ENDPOINTS
 # -----------------------------------------------------------------------------
 
@@ -255,13 +394,6 @@ async def chat(input_data: BaseModel):
         logger.error(f"❌ Chat error: {e}")
         raise HTTPException(status_code=500, detail="Failed to process message.")
 
-def generate_response(prompt):
-    tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_MODEL_PATH)
-    model = AutoModelForCausalLM.from_pretrained(FINE_TUNED_MODEL_PATH).to(device)
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
-    with torch.no_grad():
-        outputs = model.generate(**inputs, max_length=500, temperature=0.7, top_p=0.95)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
 # -----------------------------------------------------------------------------
 # RUN FASTAPI SERVER
 # -----------------------------------------------------------------------------
