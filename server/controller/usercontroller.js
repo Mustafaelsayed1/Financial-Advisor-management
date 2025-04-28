@@ -9,7 +9,7 @@ import { dirname } from "path";
 import User from "../models/UserModel.js";
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = '6dsb&c~HYAx3K787,5.K2lK*EA*h|9C-6Y,$.jiKS1s9lTE5^bPN$>+~';
 
 // __dirname resolution
 const __filename = fileURLToPath(import.meta.url);

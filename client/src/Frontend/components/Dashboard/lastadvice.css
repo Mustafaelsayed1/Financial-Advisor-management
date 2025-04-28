@@ -1,0 +1,91 @@
+.last-advice-page {
+    max-width: 900px;  /* Max width of the page */
+    margin: 30px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fb; /* Soft background color */
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    color: #4a90e2; /* Add a color for the title */
+    margin-bottom: 20px;
+  }
+  
+  .survey-box,
+  .advice-box {
+    margin-top: 20px;
+  }
+  
+  .input-container,
+  .advice-container {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .field {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  input,
+  textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #f7f7f7;
+    cursor: not-allowed;
+  }
+  
+  /* Larger and expanding text field for each advice */
+  textarea.advice-textfield {
+    height: auto;  /* Automatically adjust height */
+    resize: none;
+    line-height: 1.5;
+    min-height: 120px;  /* Start with a minimum height */
+    max-height: 200px;  /* Max height to avoid overflow */
+  }
+  
+  /* Larger summary text area */
+  textarea.summary-textarea {
+    height: auto;
+    resize: none;
+    line-height: 1.5;
+    min-height: 200px;  /* Start with a larger height */
+    max-height: 300px;  /* Max height to avoid overflow */
+  }
+  
+  .summary-field {
+    margin-top: 15px;
+  }
+  
+  /* For compact UI */
+  input,
+  textarea {
+    height: auto;
+    font-size: 1rem;
+    line-height: 1.5;
+    padding: 10px;
+    min-height: 50px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .survey-box,
+    .advice-box {
+      min-width: 100%;
+    }
+  }
+  
