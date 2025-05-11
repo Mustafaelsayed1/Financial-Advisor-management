@@ -6,11 +6,23 @@ import os
 from dotenv import load_dotenv
 from services.agent.agent import financial_agent  # Import AI agent logic
 import logging
+import json
+from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 # ✅ Load environment variables
 load_dotenv(".env")
 
 app = FastAPI(title="Financial Advisor AI")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ✅ Define Input Model for Chat Requests
 class ChatRequest(BaseModel):
@@ -21,6 +33,11 @@ class ChatRequest(BaseModel):
 # ✅ Define Input Model for Forecast Requests
 class ForecastRequest(BaseModel):
     forecast_type: str
+
+# ✅ Define Input Models
+class StockRequest(BaseModel):
+    symbol: str
+    period: str
 
 # ✅ API Endpoints for Forecast Models
 @app.post("/predict")
@@ -75,6 +92,56 @@ def chat_with_ai(request: ChatRequest):
             status_code=500, 
             detail="I'm having trouble processing your request at the moment. Could you try again in a little while?"
         )
+
+# ✅ API Endpoints for Stock Data
+@app.get("/historical")
+def get_historical_data(symbol: str, period: str):
+    """Get historical stock data for a given symbol and period."""
+    try:
+        # Load the appropriate data file based on the period
+        data_file = f"services/stock/STOCK_{period}_data.json"
+        if not os.path.exists(data_file):
+            raise HTTPException(status_code=404, detail=f"No data available for period {period}")
+        
+        with open(data_file, 'r') as f:
+            data = json.load(f)
+            
+        # Filter data for the requested symbol
+        symbol_data = [entry for entry in data if entry.get('symbol') == symbol]
+        
+        if not symbol_data:
+            raise HTTPException(status_code=404, detail=f"No data available for symbol {symbol}")
+            
+        return {"data": symbol_data}
+    except Exception as e:
+        logging.error(f"Error fetching historical data: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error fetching historical data")
+
+@app.get("/predict")
+def predict_stock(symbol: str):
+    """Get stock price predictions for a given symbol."""
+    try:
+        # Load forecast results
+        with open("services/stock/STOCK_forecast_results.json", 'r') as f:
+            forecast_data = json.load(f)
+            
+        # Filter data for the requested symbol
+        symbol_forecast = [entry for entry in forecast_data if entry.get('symbol') == symbol]
+        
+        if not symbol_forecast:
+            raise HTTPException(status_code=404, detail=f"No forecast available for symbol {symbol}")
+            
+        # Extract dates and predicted values
+        dates = [entry.get('date') for entry in symbol_forecast]
+        predicted = [entry.get('predicted_price') for entry in symbol_forecast]
+        
+        return {
+            "dates": dates,
+            "predicted": predicted
+        }
+    except Exception as e:
+        logging.error(f"Error fetching predictions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error fetching predictions")
 
 # ✅ Home Route
 @app.get("/")

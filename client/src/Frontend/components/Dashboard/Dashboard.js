@@ -14,6 +14,7 @@ import "../styles/dashboard.css";
 import Chat from "../Features/Chat";
 import Questionnaire from "../Features/Questionnaire";
 import LifeManagement from "../Features/LifeManagement";
+import StatisticsChart from "./Statistics";
 
 const Dashboard = () => {
   const { state } = useAuthContext();
@@ -179,6 +180,11 @@ const Dashboard = () => {
                 <Nav.Item>
                   <Nav.Link eventKey="investments" className="nav-link-custom">
                     Investments
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="statistics" className="nav-link-custom">
+                    Stock Statistics
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
@@ -388,6 +394,10 @@ const Dashboard = () => {
                       </Col>
                     ))}
                   </Row>
+                </Tab.Pane>
+
+                <Tab.Pane eventKey="statistics">
+                  <StatisticsChart />
                 </Tab.Pane>
 
                 <Tab.Pane eventKey="transactions">
