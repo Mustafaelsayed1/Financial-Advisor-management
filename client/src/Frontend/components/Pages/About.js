@@ -1,6 +1,8 @@
 import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import "../styles/Pages.css";
+import aboutImage from "../../../assets/img/about.png";
+import aboutImage2 from "../../../assets/img/about-2.jpg";
 
 const About = () => {
   return (
@@ -38,7 +40,11 @@ const About = () => {
               </p>
             </Col>
             <Col lg={6} className="text-center">
-              <div className="about-image mission-img"></div>
+              <img
+                src={aboutImage}
+                alt="About our mission"
+                className="about-image"
+              />
             </Col>
           </Row>
         </Container>
@@ -63,8 +69,12 @@ const About = () => {
                 but at a fraction of the cost and available 24/7.
               </p>
             </Col>
-            <Col lg={6} className="text-center order-lg-1">
-              <div className="about-image story-img"></div>
+            <Col lg={6} className="text-center">
+              <img
+                src={aboutImage2}
+                alt="About our mission"
+                className="about-image"
+              />
             </Col>
           </Row>
         </Container>
@@ -77,7 +87,22 @@ const About = () => {
             <Col md={4} className="mb-4">
               <div className="card h-100">
                 <div className="card-body text-center">
-                  <div className="value-icon accessibility-icon mb-3"></div>
+                  <div className="value-icon accessibility-icon mb-3">
+                    <svg
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="4" r="2" />
+                      <path d="M4 20l4-10h8l4 10" />
+                      <path d="M10 10l1 6m2-6l-1 6" />
+                    </svg>
+                  </div>
                   <h3>Accessibility</h3>
                   <p>
                     Making financial advice available to everyone regardless of
@@ -89,7 +114,23 @@ const About = () => {
             <Col md={4} className="mb-4">
               <div className="card h-100">
                 <div className="card-body text-center">
-                  <div className="value-icon transparency-icon mb-3"></div>
+                  <div className="value-icon transparency-icon mb-3">
+                    <svg
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M12 4v16" />
+                      <path d="M4 4h16v4H4z" />
+                      <path d="M4 12h8" />
+                    </svg>
+                  </div>
                   <h3>Transparency</h3>
                   <p>
                     Being clear about how we work, what we can offer, and the
@@ -101,7 +142,21 @@ const About = () => {
             <Col md={4} className="mb-4">
               <div className="card h-100">
                 <div className="card-body text-center">
-                  <div className="value-icon innovation-icon mb-3"></div>
+                  <div className="value-icon innovation-icon mb-3">
+                    <svg
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20 8a8 8 0 1 1-16 0" />
+                      <path d="M12 2v6l3 3" />
+                    </svg>
+                  </div>
                   <h3>Innovation</h3>
                   <p>
                     Continuously improving our AI to provide more accurate and
