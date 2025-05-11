@@ -1,14 +1,15 @@
 /* Dashboard Styles */
 .dashboard-page {
+  padding: 2rem 0;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #f8f9fa;
 }
 
 .dashboard-header {
-  background-color: #ffffff;
-  padding: 30px 0;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-header h1 {
@@ -18,45 +19,45 @@
 }
 
 .dashboard-content {
-  margin-bottom: 50px;
+  padding: 0 1rem;
 }
 
 /* Sidebar Styles */
 .dashboard-sidebar {
-  margin-bottom: 30px;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-link-custom {
-  color: #333;
-  padding: 12px 15px;
-  border-radius: 6px;
+  color: #495057;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
   transition: all 0.3s ease;
-  font-weight: 500;
-  margin-bottom: 8px;
 }
 
 .nav-link-custom:hover {
-  background-color: #f0f4f8;
-  color: #0066cc;
+  background-color: #f8f9fa;
+  color: #212529;
 }
 
 .nav-link-custom.active {
-  background-color: #0066cc;
+  background-color: #007bff;
   color: white;
 }
 
 /* Card Styles */
 .dashboard-card {
   border: none;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
 }
 
 .dashboard-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .card-subtitle {
@@ -67,37 +68,39 @@
 }
 
 .card-value {
+  color: #212529;
   font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: bold;
   margin-bottom: 0;
-  color: #333;
 }
 
 .card-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 15px;
-  color: #333;
+  color: #495057;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
 }
 
 .tab-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #333;
+  color: #212529;
+  margin-bottom: 1.5rem;
 }
 
 /* Progress Bar */
-.progress {
-  height: 10px;
+.savings-goal .progress {
+  height: 1.5rem;
   background-color: #e9ecef;
-  border-radius: 10px;
-  margin: 10px 0;
+  border-radius: 0.75rem;
 }
 
-.progress-bar {
-  background-color: #0066cc;
-  border-radius: 10px;
+.savings-goal .progress-bar {
+  background-color: #28a745;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Transactions */
@@ -157,31 +160,31 @@
 
 /* Financial Tips */
 .financial-tips {
-  padding-left: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .financial-tips li {
-  margin-bottom: 12px;
-  line-height: 1.5;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.financial-tips li:last-child {
+  border-bottom: none;
 }
 
 /* Growth Indicator */
 .growth-indicator {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 15px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-top: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 
 .growth-indicator.positive {
-  background-color: rgba(40, 167, 69, 0.1);
   color: #28a745;
 }
 
 .growth-indicator.negative {
-  background-color: rgba(220, 53, 69, 0.1);
   color: #dc3545;
 }
 
@@ -209,6 +212,43 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* AI Advice Modal Styles */
+.ai-advice-content {
+  padding: 1rem;
+  line-height: 1.6;
+}
+
+.ai-advice-content p {
+  margin-bottom: 1rem;
+}
+
+.ai-advice-content p:last-child {
+  margin-bottom: 0;
+}
+
+.modal-content {
+  border-radius: 8px;
+  border: none;
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Loading State Styles */
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* Responsive Styles */
@@ -257,6 +297,14 @@
 
   .transaction-item {
     padding: 10px 0;
+  }
+
+  .dashboard-sidebar {
+    margin-bottom: 1.5rem;
+  }
+
+  .card-value {
+    font-size: 1.5rem;
   }
 }
 

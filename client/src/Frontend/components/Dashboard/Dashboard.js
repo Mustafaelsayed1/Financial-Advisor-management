@@ -1,13 +1,28 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Card, Button, Tab, Nav } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Tab,
+  Nav,
+  Modal,
+} from "react-bootstrap";
 import { useAuthContext } from "../../../context/AuthContext";
-import "../styles/Dashboard.css";
+import "../styles/dashboard.css";
+import Chat from "../Features/Chat";
+import Questionnaire from "../Features/Questionnaire";
+import LifeManagement from "../Features/LifeManagement";
 
 const Dashboard = () => {
   const { state } = useAuthContext();
   const { user } = state;
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [showAiAdvice, setShowAiAdvice] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Mock data for dashboard
   const dashboardData = {
@@ -69,6 +84,39 @@ const Dashboard = () => {
   const savingsProgress =
     (dashboardData.currentSavings / dashboardData.savingsGoal) * 100;
 
+  const handleGetAiAdvice = async () => {
+    setIsLoading(true);
+    try {
+      // Here you would typically make an API call to your backend
+      // For now, we'll simulate a response
+      const response = await new Promise((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              advice:
+                "Based on your current financial situation, I recommend:\n\n" +
+                "1. Increase your emergency fund to cover 6 months of expenses\n" +
+                "2. Consider diversifying your investment portfolio\n" +
+                "3. Look into tax-advantaged retirement accounts\n" +
+                "4. Review your monthly subscriptions to reduce unnecessary expenses",
+            }),
+          1500
+        )
+      );
+
+      setAiAdvice(response.advice);
+      setShowAiAdvice(true);
+    } catch (error) {
+      console.error("Error getting AI advice:", error);
+      setAiAdvice(
+        "Sorry, I couldn't generate advice at this time. Please try again later."
+      );
+      setShowAiAdvice(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
@@ -79,11 +127,40 @@ const Dashboard = () => {
               <p className="text-muted">Here's an overview of your finances</p>
             </Col>
             <Col xs="auto">
-              <Button variant="primary">Get AI Advice</Button>
+              <Button
+                variant="primary"
+                onClick={handleGetAiAdvice}
+                disabled={isLoading}
+              >
+                {isLoading ? "Generating Advice..." : "Get AI Advice"}
+              </Button>
             </Col>
           </Row>
         </Container>
       </div>
+
+      {/* AI Advice Modal */}
+      <Modal
+        show={showAiAdvice}
+        onHide={() => setShowAiAdvice(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>AI Financial Advice</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="ai-advice-content">
+            {aiAdvice.split("\n").map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAiAdvice(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Container className="dashboard-content">
         <Tab.Container
@@ -117,6 +194,24 @@ const Dashboard = () => {
                 <Nav.Item>
                   <Nav.Link eventKey="advice" className="nav-link-custom">
                     AI Advice
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="chat" className="nav-link-custom">
+                    AI Chat
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link
+                    eventKey="questionnaire"
+                    className="nav-link-custom"
+                  >
+                    Questionnaire
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="life-goals" className="nav-link-custom">
+                    Life Goals
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
@@ -343,10 +438,61 @@ const Dashboard = () => {
 
                 <Tab.Pane eventKey="advice">
                   <h2 className="tab-title">AI Financial Advice</h2>
-                  <p>
-                    This section will provide personalized AI-generated
-                    financial advice.
-                  </p>
+                  <Row>
+                    <Col lg={6} className="mb-4">
+                      <Card className="dashboard-card">
+                        <Card.Body>
+                          <h5>Get Personalized Financial Advice</h5>
+                          <p className="mb-4">
+                            Our AI analyzes your financial data and provides
+                            personalized recommendations to help you achieve
+                            your financial goals.
+                          </p>
+                          <Button
+                            variant="primary"
+                            onClick={handleGetAiAdvice}
+                            disabled={isLoading}
+                          >
+                            {isLoading
+                              ? "Generating Advice..."
+                              : "Get AI Advice"}
+                          </Button>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                    <Col lg={6} className="mb-4">
+                      <Card className="dashboard-card">
+                        <Card.Body>
+                          <h5>Financial Questionnaire</h5>
+                          <p className="mb-4">
+                            Complete our questionnaire to help us better
+                            understand your financial situation and goals.
+                          </p>
+                          <Button
+                            variant="outline-primary"
+                            onClick={() => setActiveTab("questionnaire")}
+                          >
+                            Take Questionnaire
+                          </Button>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                </Tab.Pane>
+
+                <Tab.Pane eventKey="chat">
+                  <h2 className="tab-title">AI Financial Advisor Chat</h2>
+                  <Chat />
+                </Tab.Pane>
+
+                <Tab.Pane eventKey="questionnaire">
+                  <h2 className="tab-title">Financial Questionnaire</h2>
+                  <Questionnaire />
+                </Tab.Pane>
+
+                <Tab.Pane eventKey="life-goals">
+                  <h2 className="tab-title">Life Goals Management</h2>
+                  <LifeManagement />
                 </Tab.Pane>
 
                 <Tab.Pane eventKey="settings">

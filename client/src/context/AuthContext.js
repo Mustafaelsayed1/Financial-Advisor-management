@@ -43,22 +43,51 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const login = async (userData) => {
+    try {
+      const response = await axios.post(
+        `${
+          process.env.REACT_APP_API_URL || "http://localhost:4000"
+        }/api/users/login`,
+        userData,
+        { withCredentials: true }
+      );
+
+      const { token, user } = response.data;
+
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify({ token, user }));
+      localStorage.setItem("token", token);
+
+      // Set authorization header for future requests
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Update context state
+      dispatch({ type: "LOGIN_SUCCESS", payload: user });
+
+      return { success: true };
+    } catch (error) {
+      console.error("Login error:", error);
+      return {
+        success: false,
+        error: error.response?.data?.message || "Login failed",
+      };
+    }
+  };
+
   const checkAuth = useCallback(async () => {
     try {
-      const token =
-        document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("token="))
-          ?.split("=")[1] || localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       if (token && !state.isAuthenticated) {
+        // Set authorization header
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
         const response = await axios.get(
           `${
             process.env.REACT_APP_API_URL || "http://localhost:4000"
           }/api/users/checkAuth`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
         const { user } = response.data;
         if (user) {
@@ -95,7 +124,7 @@ export const AuthProvider = ({ children }) => {
   }, [checkAuth]);
 
   // Memoize the context value to prevent unnecessary re-renders
-  const contextValue = useMemo(() => ({ state, dispatch }), [state]);
+  const contextValue = useMemo(() => ({ state, dispatch, login }), [state]);
 
   useEffect(() => {
     console.log("AuthProvider state:", state);

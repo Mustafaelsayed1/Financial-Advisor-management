@@ -63,20 +63,85 @@ const personalityTraits = {
 const conversationMemory = new Map();
 const MAX_MEMORY_SIZE = 5;
 
+// **Add greeting patterns**
+const greetings = {
+  patterns: [
+    /^hi\b/i,
+    /^hello\b/i,
+    /^hey\b/i,
+    /^greetings\b/i,
+    /^good (morning|afternoon|evening)\b/i,
+  ],
+  responses: [
+    "Hello! I'm your AI financial advisor. How can I help you today?",
+    "Hi there! I'm here to help with your financial questions. What would you like to know?",
+    "Hello! I'm ready to assist you with any financial matters. What's on your mind?",
+    "Hi! I'm your financial assistant. How can I help you today?",
+    "Greetings! I'm here to help with your financial goals. What would you like to discuss?",
+  ],
+};
+
+// **Add casual conversation patterns**
+const casualConversation = {
+  patterns: [/how are you/i, /how's it going/i, /what's up/i, /how do you do/i],
+  responses: [
+    "I'm doing well, thank you! I'm here to help with your financial needs. What would you like to discuss?",
+    "I'm great! Ready to help you with any financial questions or concerns you might have.",
+    "I'm here and ready to assist you with your financial goals. What would you like to know?",
+    "I'm doing well! How can I help you with your finances today?",
+  ],
+};
+
+// **Add farewell patterns**
+const farewells = {
+  patterns: [
+    /^bye\b/i,
+    /^goodbye\b/i,
+    /^see you\b/i,
+    /^farewell\b/i,
+    /^thanks, bye\b/i,
+  ],
+  responses: [
+    "Goodbye! Feel free to return if you have any financial questions.",
+    "Take care! I'm here whenever you need financial advice.",
+    "Goodbye! Don't hesitate to ask if you need more financial guidance.",
+    "See you later! Remember, I'm here to help with your financial needs.",
+  ],
+};
+
 // **Get a random response template based on sentiment and message content**
 const getPersonalizedIntro = (message, sentimentScore) => {
+  // Check for greetings
+  if (greetings.patterns.some((pattern) => pattern.test(message))) {
+    return greetings.responses[
+      Math.floor(Math.random() * greetings.responses.length)
+    ];
+  }
+
+  // Check for casual conversation
+  if (casualConversation.patterns.some((pattern) => pattern.test(message))) {
+    return casualConversation.responses[
+      Math.floor(Math.random() * casualConversation.responses.length)
+    ];
+  }
+
+  // Check for farewells
+  if (farewells.patterns.some((pattern) => pattern.test(message))) {
+    return farewells.responses[
+      Math.floor(Math.random() * farewells.responses.length)
+    ];
+  }
+
+  // Handle financial questions and other messages
   if (sentimentScore < -1) {
-    // Negative sentiment
     return personalityTraits.empathetic[
       Math.floor(Math.random() * personalityTraits.empathetic.length)
     ];
   } else if (/how|what|why|when|which|where/i.test(message)) {
-    // Question
     return personalityTraits.thoughtful[
       Math.floor(Math.random() * personalityTraits.thoughtful.length)
     ];
   } else {
-    // Neutral or positive
     return personalityTraits.friendly[
       Math.floor(Math.random() * personalityTraits.friendly.length)
     ];
@@ -250,20 +315,38 @@ export const handleChatRequest = async (req, res) => {
 
   const lowerMessage = message.toLowerCase().trim();
 
+  // Check for greetings first
+  if (greetings.patterns.some((pattern) => pattern.test(lowerMessage))) {
+    const response =
+      greetings.responses[
+        Math.floor(Math.random() * greetings.responses.length)
+      ];
+    return res.json({ response });
+  }
+
+  // Check for casual conversation
+  if (
+    casualConversation.patterns.some((pattern) => pattern.test(lowerMessage))
+  ) {
+    const response =
+      casualConversation.responses[
+        Math.floor(Math.random() * casualConversation.responses.length)
+      ];
+    return res.json({ response });
+  }
+
+  // Check for farewells
+  if (farewells.patterns.some((pattern) => pattern.test(lowerMessage))) {
+    const response =
+      farewells.responses[
+        Math.floor(Math.random() * farewells.responses.length)
+      ];
+    return res.json({ response });
+  }
+
   // Check for exact FAQ matches
   if (faqs[lowerMessage]) {
     const response = faqs[lowerMessage];
-
-    // Store in conversation memory
-    if (userId) {
-      if (!conversationMemory.has(userId)) {
-        conversationMemory.set(userId, []);
-      }
-      const userMemory = conversationMemory.get(userId);
-      userMemory.push({ message, response });
-      if (userMemory.length > MAX_MEMORY_SIZE) userMemory.shift();
-    }
-
     return res.json({ response });
   }
 
@@ -273,7 +356,6 @@ export const handleChatRequest = async (req, res) => {
     if (userId && conversationMemory.has(userId)) {
       const userMemory = conversationMemory.get(userId);
       if (userMemory.length > 0) {
-        // Reference previous conversation if relevant
         const lastExchange = userMemory[userMemory.length - 1];
         if (
           message.includes("that") ||
@@ -289,8 +371,6 @@ export const handleChatRequest = async (req, res) => {
     }
 
     const sentimentResult = sentiment.analyze(message);
-
-    // Start with personalized intro based on message sentiment and content
     const personalizedIntro = getPersonalizedIntro(
       message,
       sentimentResult.score
@@ -299,66 +379,78 @@ export const handleChatRequest = async (req, res) => {
     let responseText = `${contextAwareness}${personalizedIntro}\n\n`;
     let foundRelevantData = false;
 
-    // Only include sentiment analysis for certain types of messages
+    // Only include financial data and advice for actual financial queries
     if (
-      /feeling|think|opinion|market outlook|future|predict/i.test(lowerMessage)
+      !greetings.patterns.some((pattern) => pattern.test(lowerMessage)) &&
+      !casualConversation.patterns.some((pattern) =>
+        pattern.test(lowerMessage)
+      ) &&
+      !farewells.patterns.some((pattern) => pattern.test(lowerMessage))
     ) {
-      const sentimentLabel =
-        sentimentResult.score > 0
-          ? "😊 positive"
-          : sentimentResult.score < 0
-          ? "😞 negative"
-          : "😐 neutral";
-      responseText += `I'm sensing a ${sentimentLabel} tone in your message. `;
+      // Only include sentiment analysis for certain types of messages
+      if (
+        /feeling|think|opinion|market outlook|future|predict/i.test(
+          lowerMessage
+        )
+      ) {
+        const sentimentLabel =
+          sentimentResult.score > 0
+            ? "😊 positive"
+            : sentimentResult.score < 0
+            ? "😞 negative"
+            : "😐 neutral";
+        responseText += `I'm sensing a ${sentimentLabel} tone in your message. `;
+      }
+
+      if (/btc|eth|crypto price/i.test(lowerMessage)) {
+        const cryptoSymbol =
+          lowerMessage.match(/(?:btc|eth|crypto price of )(\w+)/)?.[1] || "BTC";
+        responseText += `\n${await fetchCryptoPrice(cryptoSymbol)}`;
+        foundRelevantData = true;
+      }
+
+      if (/stock price/i.test(lowerMessage)) {
+        const stockSymbol =
+          lowerMessage.match(/stock price of (\w+)/)?.[1]?.toUpperCase() ||
+          "AAPL";
+        responseText += `\n${await fetchStockPrice(stockSymbol)}`;
+        foundRelevantData = true;
+      }
+
+      if (/exchange rate|currency/i.test(lowerMessage)) {
+        responseText += `\n${await fetchCurrencyRates()}`;
+        foundRelevantData = true;
+      }
+
+      if (/gold|silver|metal prices/i.test(lowerMessage)) {
+        responseText += `\n${await fetchMetalPrices(
+          lowerMessage.toUpperCase()
+        )}`;
+        foundRelevantData = true;
+      }
+
+      if (/finance news|business news/i.test(lowerMessage)) {
+        responseText += `\n${await fetchFinanceNews()}`;
+        foundRelevantData = true;
+      }
+
+      if (!foundRelevantData) {
+        const randomIntro = [
+          "Based on my financial expertise, ",
+          "As your financial advisor, I'd suggest that ",
+          "Many of my clients find it helpful to know that ",
+          "Here's a valuable financial insight: ",
+          "From what I understand about your situation, ",
+        ][Math.floor(Math.random() * 5)];
+
+        responseText += `${randomIntro}${
+          financialTips[Math.floor(Math.random() * financialTips.length)]
+        }`;
+      }
+
+      // Add follow-up suggestions only for financial queries
+      responseText += getFollowUpSuggestions(message);
     }
-
-    if (/btc|eth|crypto price/i.test(lowerMessage)) {
-      const cryptoSymbol =
-        lowerMessage.match(/(?:btc|eth|crypto price of )(\w+)/)?.[1] || "BTC";
-      responseText += `\n${await fetchCryptoPrice(cryptoSymbol)}`;
-      foundRelevantData = true;
-    }
-
-    if (/stock price/i.test(lowerMessage)) {
-      const stockSymbol =
-        lowerMessage.match(/stock price of (\w+)/)?.[1]?.toUpperCase() ||
-        "AAPL";
-      responseText += `\n${await fetchStockPrice(stockSymbol)}`;
-      foundRelevantData = true;
-    }
-
-    if (/exchange rate|currency/i.test(lowerMessage)) {
-      responseText += `\n${await fetchCurrencyRates()}`;
-      foundRelevantData = true;
-    }
-
-    if (/gold|silver|metal prices/i.test(lowerMessage)) {
-      responseText += `\n${await fetchMetalPrices(lowerMessage.toUpperCase())}`;
-      foundRelevantData = true;
-    }
-
-    if (/finance news|business news/i.test(lowerMessage)) {
-      responseText += `\n${await fetchFinanceNews()}`;
-      foundRelevantData = true;
-    }
-
-    if (!foundRelevantData) {
-      // Add a conversational element when giving general advice
-      const randomIntro = [
-        "Based on my financial expertise, ",
-        "As your financial advisor, I'd suggest that ",
-        "Many of my clients find it helpful to know that ",
-        "Here's a valuable financial insight: ",
-        "From what I understand about your situation, ",
-      ][Math.floor(Math.random() * 5)];
-
-      responseText += `${randomIntro}${
-        financialTips[Math.floor(Math.random() * financialTips.length)]
-      }`;
-    }
-
-    // Add follow-up suggestions based on the topic
-    responseText += getFollowUpSuggestions(message);
 
     // Store in conversation memory
     if (userId) {
@@ -383,7 +475,7 @@ export const handleChatRequest = async (req, res) => {
     console.error("Error processing request:", error);
     res.status(500).json({
       response:
-        "I'm sorry, but I'm having trouble retrieving the financial data you need right now. Could we try again in a moment?",
+        "I'm sorry, but I'm having trouble processing your request right now. Could we try again in a moment?",
     });
   }
 };

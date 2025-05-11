@@ -15,6 +15,7 @@ import Dashboard from "./Frontend/components/Dashboard/Dashboard";
 import NotFound from "./Frontend/components/Pages/NotFound";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Frontend/components/common/ProtectedRoute";
+import LifeManagement from "./Frontend/components/Features/LifeManagement";
 import "./App.css";
 
 function App() {
@@ -51,6 +52,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/life-management"
+                element={
+                  <ProtectedRoute>
+                    <LifeManagement />
                   </ProtectedRoute>
                 }
               />

@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/static/css/main.503e9f74.css",
+    "main.js": "/static/js/main.72dbfcfb.js",
+    "static/js/453.c8ec0f56.chunk.js": "/static/js/453.c8ec0f56.chunk.js",
+    "static/media/hero.jpg": "/static/media/hero.4e79efda5e1ab47a895f.jpg",
+    "static/media/mission.jpg": "/static/media/mission.0c10e0f75e7618fc740d.jpg",
+    "static/media/about.png": "/static/media/about.aa09ffd32e467900b73b.png",
+    "static/media/Urbanist-Regular.ttf": "/static/media/Urbanist-Regular.64ab880a68030133bbf7.ttf",
+    "static/media/Urbanist-Bold.ttf": "/static/media/Urbanist-Bold.28937b70005aac17035d.ttf",
+    "static/media/latest_logo.svg": "/static/media/latest_logo.284bdda2fd8019c61631b2c0c750630c.svg",
+    "static/media/eye-off.svg": "/static/media/eye-off.14fbe11dea57fdc7483adcb11fa9afd6.svg",
+    "static/media/eye.svg": "/static/media/eye.5d20f340903942ae0ddb7f0e418c8607.svg",
+    "index.html": "/index.html",
+    "main.503e9f74.css.map": "/static/css/main.503e9f74.css.map",
+    "main.72dbfcfb.js.map": "/static/js/main.72dbfcfb.js.map",
+    "453.c8ec0f56.chunk.js.map": "/static/js/453.c8ec0f56.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.503e9f74.css",
+    "static/js/main.72dbfcfb.js"
+  ]
+}

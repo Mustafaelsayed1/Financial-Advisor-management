@@ -72,8 +72,12 @@ const NavBar = () => {
   }, [isOpen]);
 
   const handleLogout = async () => {
-    logout();
-    navigate("/");
+    try {
+      await logout();
+      setIsOpen(false); // Close mobile menu if open
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const toggleMenu = () => {
@@ -85,7 +89,7 @@ const NavBar = () => {
     <div className="auth-container">
       {isAuthenticated && user ? (
         <>
-          <span className="user-name">{user.name || user.email}</span>
+          <span className="user-name">{user.username || user.email}</span>
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
@@ -153,6 +157,18 @@ const NavBar = () => {
               }
             >
               Services
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link
+              to="/life-management"
+              className={
+                location.pathname === "/life-management"
+                  ? "nav-link active"
+                  : "nav-link"
+              }
+            >
+              Life Management
             </Link>
           </li>
           <li className="nav-item">

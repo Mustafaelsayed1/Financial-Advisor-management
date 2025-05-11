@@ -2,21 +2,21 @@ import { useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 
 export const useLogin = () => {
-  const [error, setError] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuthContext();
 
-  const loginUser = async (email, password) => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
-    setError(null);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      // In a real application, you would make an API call here
-      // For demo purposes, we're simulating a successful login
-
-      // Mock API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       // Example validation
       if (!email || !password) {
         throw new Error("Email and password are required");
@@ -26,29 +26,33 @@ export const useLogin = () => {
         throw new Error("Password must be at least 6 characters");
       }
 
-      // Mock successful login - in a real app, this would come from the server
-      const userData = {
-        id: "123456",
-        name: "Demo User",
-        email: email,
-        role: "user",
-      };
-
-      // Use the login function from AuthContext
-      const result = await login(userData);
+      // Send login request to server
+      const result = await login({ email, password });
 
       if (!result.success) {
         throw new Error(result.error || "Login failed");
       }
 
+      setSuccessMessage("Login successful!");
       return true;
     } catch (err) {
-      setError(err.message || "An error occurred during login");
+      setErrorMessage(err.message || "An error occurred during login");
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { loginUser, isLoading, error };
+  return {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    showPassword,
+    setShowPassword,
+    errorMessage,
+    successMessage,
+    isLoading,
+    handleLogin,
+  };
 };

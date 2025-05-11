@@ -117,7 +117,7 @@ app.post("/api/chat", async (req, res) => {
     // Check if Flask API is running
     let flaskAvailable = false;
     try {
-      await axios.get(`${FLASK_API_BASE_URL}`, {
+      await axios.get(`${FLASK_API_BASE_URL}/api/chat`, {
         timeout: 1000,
         signal: controller.signal,
       });
