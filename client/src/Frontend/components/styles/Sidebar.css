@@ -3,14 +3,15 @@
   width: 220px;
   background: #101c28;
   color: white;
-  height: 100vh;
-  position: fixed;
-  top: 20;
+  height: 100vh; /* Use 100% of viewport height */
+  position: fixed; /* Fix position relative to the viewport */
+  top: 20px; /* Corrected 'top' value with unit */
   left: 0;
-  padding: 20px;
+  padding: 20px; /* Add internal padding */
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
+  display: flex; /* Use flexbox */
+  flex-direction: column; /* Stack children vertically */
+  /* overflow-y: auto; /* Removed overflow from main container */
 }
 
 /* Sidebar Header */
@@ -18,9 +19,27 @@
   font-size: 20px;
   font-weight: bold;
   text-align: center;
+  /* Add margin-bottom if needed to space out header from menu */
+  margin-bottom: 20px; /* Example spacing */
 }
 
-/* Sidebar Links */
+/* Sidebar Menu (The scrollable content area) */
+.sidebar-menu {
+  list-style: none; /* Remove default bullet points */
+  padding: 0; /* Remove default list padding */
+  margin: 0; /* Remove default list margin */
+  flex-grow: 1; /* Allows this list to take up the remaining vertical space in the flex container */
+  overflow-y: auto; /* <<-- Add vertical scrollbar when content overflows */
+  overflow-x: hidden; /* Hide horizontal overflow if any */
+  /* If you need some space at the bottom, you might add padding-bottom here */
+  padding-bottom: 20px; /* Example spacing at the bottom of the scrollable area */
+}
+
+/* Styles for individual links within the menu */
+.sidebar-menu li {
+    /* Add any specific list item padding/margin here if needed */
+}
+
 .sidebar a {
   color: white;
   text-decoration: none;
@@ -32,6 +51,11 @@
   border-radius: 6px;
 }
 
+.sidebar a svg { /* Style for the icons */
+    margin-right: 10px; /* Add space between icon and text */
+}
+
+
 .sidebar a:hover {
   background: #232d36;
 }
@@ -42,63 +66,12 @@
     width: 180px;
   }
 
+  /* Note: The ':hover' effect on width might feel janky on touch devices */
   .sidebar:hover {
-    width: 165px;
+    width: 165px; /* Consider if this hover effect is needed on smaller screens */
   }
 
   .dashboard-container {
-    margin-left: 180px;
-  }
-}
-/* Sidebar */
-.sidebar {
-  width: 220px;
-  background: #101c28;
-  color: white;
-  height: 100vh;
-  position: fixed;
-  top: 20;
-  left: 0;
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-
-}
-
-/* Sidebar Header */
-.sidebar-header {
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-}
-
-/* Sidebar Links */
-.sidebar a {
-  color: white;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  transition: background 0.3s ease;
-  font-size: 16px;
-  border-radius: 6px;
-}
-
-.sidebar a:hover {
-  background: #232d36;
-}
-
-/* Sidebar Responsive Design */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 180px;
-  }
-  .sidebar:hover {
-    width: 165px;
-  }
-
-  .dashboard-container {
-    margin-left: 180px;
+    margin-left: 180px; /* Ensure main content shifts */
   }
 }
