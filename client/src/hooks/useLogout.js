@@ -1,46 +1,29 @@
-import { useAuthContext } from "../context/AuthContext";
+import { useCallback } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
 
 export const useLogout = () => {
   const { dispatch } = useAuthContext();
-  const navigate = useNavigate();
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
-      // Call the logout endpoint
+      // Send the logout request to the server
       await axios.post(
-        `${
-          process.env.REACT_APP_API_URL || "http://localhost:4000"
-        }/api/users/logout`,
+        "http://localhost:4000/api/users/logout",
         {},
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true } // Ensure cookies are sent if needed
       );
 
-      // Remove user from local storage
+      // Clear localStorage (client-side only)
       localStorage.removeItem("user");
       localStorage.removeItem("token");
 
-      // Clear axios default headers
-      delete axios.defaults.headers.common["Authorization"];
-
-      // Update auth context
+      // Dispatch the logout action to update the auth state
       dispatch({ type: "LOGOUT_SUCCESS" });
-
-      // Navigate to home page
-      navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
-      // Even if the server request fails, we should still clear local data
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      delete axios.defaults.headers.common["Authorization"];
-      dispatch({ type: "LOGOUT_SUCCESS" });
-      navigate("/");
     }
-  };
+  }, [dispatch]);
 
   return { logout };
 };

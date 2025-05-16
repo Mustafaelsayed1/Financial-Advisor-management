@@ -1,76 +1,211 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import { AuthProvider } from "./context/AuthContext";
+import FinancialReportPage from "./Frontend/components/Dashboard/FinancialReportPage";
+
 import Login from "./Frontend/components/LOGIN&REGISTRATION/Login/Login";
 import Signup from "./Frontend/components/LOGIN&REGISTRATION/Signup/Signup";
 import Home from "./Frontend/components/Home/home";
 import NavBar from "./Frontend/components/Home/Navbar";
-// import PaymentHistory from "./Frontend/components/Dashboard/PaymentHistory";
 import Footer from "./Frontend/components/Home/Footer";
-import MiniNavBar from "./Frontend/components/Home/Mininavbar";
+import MiniNavbar from "./Frontend/components/Home/Mininavbar";
 import Chatbot from "./Frontend/components/chatbot/chatbot";
-import About from "./Frontend/components/Pages/About";
-import Services from "./Frontend/components/Pages/Services";
-import Contact from "./Frontend/components/Pages/Contact";
+import Questionnaire from "./Frontend/components/Dashboard/Questionnaire";
 import Dashboard from "./Frontend/components/Dashboard/Dashboard";
-import NotFound from "./Frontend/components/Pages/NotFound";
-import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./Frontend/components/common/ProtectedRoute";
-import LifeManagement from "./Frontend/components/Features/LifeManagement";
-import "./App.css";
+import Sidebar from "./Frontend/components/Dashboard/sidebar";
+import AnalyticsReport from "./Frontend/components/Dashboard/analytics";
+import Settings from "./Frontend/components/Dashboard/settings";
+import Profile from "./Frontend/components/Dashboard/profile";
+import AIChat from "./Frontend/components/chatbot/AIChat";
+import Contact from "./Frontend/components/Contact/contact";
+import LifeManagement from "./Frontend/components/Dashboard/lifemanagement";
+import StatisticsPage from "./Frontend/components/Dashboard/Statistics.js";
+import AdminDashboard from "./Frontend/components/Dashboard/AdminDashboard";
+import UserDetails from "./Frontend/components/Dashboard/UserDetails";
+import ProtectedRoute from "./Frontend/components/Auth/ProtectedRoute";
+import AdminRoute from "./Frontend/components/Auth/AdminRoute";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com"></link>
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossorigin
-          ></link>
-          <link
-            href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap"
-            rel="stylesheet"
-          ></link>
-        </head>
-        <div className="app-container">
-          <NavBar />
-          <main className="main-content">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+        <Routes>
+          {/* Home Page */}
+          <Route
+            path="/"
+            element={
+              <>
+                <NavBar />
+                <Home />
+                <Chatbot />
+                <Footer />
+              </>
+            }
+          />
 
-              {/* Protected Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/life-management"
-                element={
-                  <ProtectedRoute>
-                    <LifeManagement />
-                  </ProtectedRoute>
-                }
-              />
+          {/* Login Page */}
+          <Route
+            path="/login"
+            element={
+              <>
+                <MiniNavbar />
+                <Login />
+              </>
+            }
+          />
 
-              {/* 404 Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Chatbot />
-          <Footer />
-        </div>
+          {/* Signup Page */}
+          <Route
+            path="/Signup"
+            element={
+              <>
+                <MiniNavbar />
+                <Signup />
+              </>
+            }
+          />
+
+          {/* Protected User Routes */}
+          <Route
+            path="/Dashboard"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Dashboard />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Settings"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Settings />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Contact />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Profile />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <AnalyticsReport />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/AIChat"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <AIChat />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Questionnaire"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <Questionnaire />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/LifeManagement"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <LifeManagement />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/statistics"
+            element={
+              <ProtectedRoute>
+                <>
+                  <MiniNavbar />
+                  <Sidebar />
+                  <StatisticsPage />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* AI Report Page */}
+          <Route path="/financial-report" element={<FinancialReportPage />} />
+
+          {/* Admin Pages */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users/:id"
+            element={
+              <AdminRoute>
+                <UserDetails />
+              </AdminRoute>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );

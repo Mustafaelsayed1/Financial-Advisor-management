@@ -80,31 +80,17 @@ export const registerUser = async (req, res) => {
 // LOGIN USER
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
-  }
-
   try {
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.blocked) {
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.blocked)
       return res
         .status(403)
         .json({ message: "Your account has been blocked by the admin." });
-    }
-
-    if (!user.password) {
-      return res.status(500).json({ message: "User password not found" });
-    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
-    }
 
     const token = createToken(user);
     res.cookie("token", token, {
@@ -113,27 +99,13 @@ export const loginUser = async (req, res) => {
       sameSite: "strict",
     });
 
-    // Update login metadata
-    user.lastLogin = new Date();
-    user.lastIP =
-      req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-    user.activityLog.push({ action: "Login", timestamp: new Date() });
-    await user.save();
-
     res.status(200).json({
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
+      user: { id: user._id, username: user.username, email, role: user.role },
     });
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({ message: "Login failed", error: error.message });
+    res.status(500).json({ message: "Login failed", error });
   }
 };
 

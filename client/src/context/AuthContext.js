@@ -7,6 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const AuthContext = createContext();
 
@@ -27,12 +28,6 @@ const authReducer = (state, action) => {
         loading: false,
       };
     case "LOGOUT_SUCCESS":
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        loading: false,
-      };
     case "AUTH_ERROR":
       return { ...state, user: null, isAuthenticated: false, loading: false };
     default:
@@ -43,102 +38,101 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  const login = async (userData) => {
+  /**
+   * ✅ Fetch Authenticated User
+   * - Reads token from cookies/local storage.
+   * - Sends request to backend to validate session.
+   */
+  const checkAuth = useCallback(async () => {
     try {
-      const response = await axios.post(
+      let token = Cookies.get("token") || localStorage.getItem("token");
+
+      if (!token) {
+        console.warn("🚫 No token found. User is not authenticated.");
+        dispatch({ type: "AUTH_ERROR" });
+        return;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      const response = await axios.get(
         `${
           process.env.REACT_APP_API_URL || "http://localhost:4000"
-        }/api/users/login`,
-        userData,
+        }/api/users/checkAuth`,
         { withCredentials: true }
       );
 
-      const { token, user } = response.data;
-
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify({ token, user }));
-      localStorage.setItem("token", token);
-
-      // Set authorization header for future requests
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      // Update context state
-      dispatch({ type: "LOGIN_SUCCESS", payload: user });
-
-      return { success: true };
-    } catch (error) {
-      console.error("Login error:", error);
-      return {
-        success: false,
-        error: error.response?.data?.message || "Login failed",
-      };
-    }
-  };
-
-  const checkAuth = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      if (token && !state.isAuthenticated) {
-        // Set authorization header
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-        const response = await axios.get(
-          `${
-            process.env.REACT_APP_API_URL || "http://localhost:4000"
-          }/api/users/checkAuth`,
-          { withCredentials: true }
-        );
-        const { user } = response.data;
-        if (user) {
-          dispatch({ type: "USER_LOADED", payload: user });
-        } else {
-          dispatch({ type: "AUTH_ERROR" });
-        }
-      } else if (!token) {
-        dispatch({ type: "AUTH_ERROR" });
+      if (response.data?.user) {
+        dispatch({ type: "USER_LOADED", payload: response.data.user });
+      } else {
+        throw new Error("User data not found.");
       }
     } catch (error) {
-      console.error("Auth check failed", error);
+      console.error(
+        "❌ Authentication check failed:",
+        error.response?.data?.message || error.message
+      );
       dispatch({ type: "AUTH_ERROR" });
+      Cookies.remove("token");
+      localStorage.removeItem("token");
     }
-  }, [state.isAuthenticated]);
+  }, []);
 
+  /**
+   * ✅ Ensure User is Persisted on Page Reload
+   * - Loads from local storage first.
+   * - Verifies token with backend.
+   */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        const { token, user } = JSON.parse(storedUser);
+        const { user, token } = JSON.parse(storedUser);
         dispatch({ type: "LOGIN_SUCCESS", payload: user });
 
         if (token) {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         }
       } catch (error) {
-        console.error("Failed to parse user from localStorage:", error);
+        console.error("❌ Failed to parse user from localStorage:", error);
         dispatch({ type: "AUTH_ERROR" });
       }
     } else {
-      checkAuth();
+      checkAuth(); // Fetch user session
     }
   }, [checkAuth]);
 
-  // Memoize the context value to prevent unnecessary re-renders
-  const contextValue = useMemo(() => ({ state, dispatch, login }), [state]);
+
+
+  /**
+   * ✅ Logout Function
+   * - Clears user session from cookies & local storage.
+   */
+  const logout = () => {
+    Cookies.remove("token");
+    localStorage.removeItem("user");
+    axios.defaults.headers.common["Authorization"] = null;
+    dispatch({ type: "LOGOUT_SUCCESS" });
+  };
+
+  // ✅ Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({ state, dispatch, logout }), [state]);
 
   useEffect(() => {
-    console.log("AuthProvider state:", state);
+    console.log("🔍 AuthProvider state updated:", state);
   }, [state]);
 
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
+
+
+
 };
 
 export const useAuthContext = () => {
   const context = useContext(AuthContext);
-  console.log("AuthContext:", context);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuthContext must be used within an AuthProvider");
   }
   return context;

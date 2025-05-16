@@ -1,271 +1,148 @@
-// ✅ Existing imports...
+// 📦 Core Imports
 import express from "express";
 import dotenv from "dotenv";
-dotenv.config();
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import mongoose from "mongoose";
-import jwt from "jsonwebtoken";
 import multer from "multer";
-import connectMongoDBSession from "connect-mongodb-session";
 import session from "express-session";
+import connectMongoDBSession from "connect-mongodb-session";
 import path from "path";
-
 import { fileURLToPath } from "url";
 import axios from "axios";
+// 🧠 Optional: import helmet for security
+// import helmet from "helmet";
 
-// ✅ New: Import LifeManagement routes
-import lifeManagementRoutes from "./routes/lifemanagement.js";
-
-// ✅ Other route imports
+// 🌍 Route Imports
 import userRoutes from "./routes/userroutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import questionnaireRoutes from "./routes/questionnaireRoutes.js";
 import analyticsRoutes from "./routes/analyticRoutes.js";
+import lifeManagementRoutes from "./routes/lifemanagement.js";
+import Profile from "./controller/profileController.js";
 
-// ✅ Resolve __dirname
+// 📁 Path & Env Setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config();
 
-const app = express();
-const upload = multer({ dest: "uploads/" });
-const MongoDBStore = connectMongoDBSession(session);
-
+// 🔐 Configuration
 const PORT = process.env.PORT || 4000;
-const MONGO_URL =
-  "mongodb+srv://mohamedhammad3142:boghdaddy1234@cluster0.keg5o.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const FLASK_API_BASE_URL = "http://127.0.0.1:5000";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
-const JWT_SECRET = "6dsb&c~HYAx3K787,5.K2lK*EA*h|9C-6Y,$.jiKS1s9lTE5^bPN$>+~";
+const FLASK_API_BASE_URL = "http://localhost:8000/phi-model";
+const JWT_SECRET = process.env.JWT_SECRET || "secure_dev_token";
+const MONGO_URL =
+  process.env.MONGO_URL ||
+  "mongodb+srv://your_user:your_pass@cluster.mongodb.net/db";
 
+// 🚨 Verify Config
 if (!MONGO_URL) {
-  console.error("❌ MongoDB connection string (MONGO_URL) is missing.");
+  console.error("❌ MongoDB URI missing.");
   process.exit(1);
 }
 
-// ✅ Connect MongoDB
+// 🍃 MongoDB Connection
 const connectDB = async () => {
   try {
     await mongoose.connect(MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("✅ MongoDB connected successfully");
+    console.log("✅ MongoDB connected.");
   } catch (error) {
-    console.error("❌ Database connection error:", error);
-    setTimeout(connectDB, 5000);
+    console.error("❌ MongoDB failed:", error);
+    setTimeout(connectDB, 5000); // Retry logic
   }
 };
 connectDB();
 
+// 🧠 Session Store
+const MongoDBStore = connectMongoDBSession(session);
 const store = new MongoDBStore({
   uri: MONGO_URL,
   collection: "sessions",
 });
+store.on("error", (err) => console.error("❌ Session store error:", err));
 
-store.on("error", (error) =>
-  console.error("❌ MongoDB session store error:", error)
-);
+// 🚀 Express App Init
+const app = express();
 
-// ✅ Middleware
+// 🛡️ Middleware
+// app.use(helmet()); // Optional
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// 🌐 CORS: Allow both frontend and FastAPI
 app.use(
   cors({
-    origin: [CLIENT_URL, FLASK_API_BASE_URL],
-    methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+    origin: [
+      CLIENT_URL,
+      FLASK_API_BASE_URL,
+      "http://localhost:8000",
+      "http://127.0.0.1:8000",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+// 📂 Uploads
+const upload = multer({ dest: "uploads/" });
 
-// ✅ Routes
+// 🧩 API Routes
 app.use("/api/users", userRoutes);
+app.use("/api/chat", chatRoutes); // Web chat or logs, not AI proxy
 app.use("/api/questionnaire", questionnaireRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/lifemanagement", lifeManagementRoutes);
+app.use("/api/profile", Profile);
 
-// Import individual chat controller functions
-import {
-  handleChatRequest,
-  getChatByID,
-  getChatsByUser,
-  getChatContextByUser,
-} from "./controller/chatbotController.js";
-import { auth } from "./Middleware/authMiddleware.js";
-
-// Register individual chat routes
-app.post("/api/chat/messages", handleChatRequest);
-app.get("/api/chat/history", auth, getChatByID);
-app.get("/api/chat/user/:userId", getChatsByUser);
-app.get("/api/chat/context/:userId", auth, getChatContextByUser);
-
-// ✅ Proxy Routes for Flask
-app.post("/api/chat", async (req, res) => {
+// ✅ Unified FastAPI proxy with Authorization support
+const forwardPost = async (req, res, endpoint) => {
   try {
-    // Add a timeout to prevent hanging requests
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
-    // Log incoming chat request
-    console.log(
-      `💬 Chat request received: ${req.body.message.substring(0, 30)}...`
+    const token = req.headers.authorization || req.cookies.token;
+    const response = await axios.post(
+      `${FLASK_API_BASE_URL}${endpoint}`,
+      req.body,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: token }),
+        },
+        withCredentials: true,
+      }
     );
-
-    // Check if Flask API is running
-    let flaskAvailable = false;
-    try {
-      await axios.get(`${FLASK_API_BASE_URL}/api/chat`, {
-        timeout: 1000,
-        signal: controller.signal,
-      });
-      flaskAvailable = true;
-    } catch (e) {
-      console.warn(
-        "⚠️ Flask service not available, falling back to local chat handling"
-      );
-    }
-
-    // Use Flask if available, otherwise fall back to local chatbot
-    if (flaskAvailable) {
-      // Forward request to Flask service
-      const response = await axios.post(
-        `${FLASK_API_BASE_URL}/api/chat`,
-        req.body,
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-          signal: controller.signal,
-        }
-      );
-
-      clearTimeout(timeoutId); // Clear timeout on successful response
-      res.json(response.data);
-    } else {
-      // Fall back to local chatbot handler
-      clearTimeout(timeoutId);
-
-      // Pass to the local handler
-      const { message } = req.body;
-      if (!message) {
-        return res.status(400).json({
-          response:
-            "I need a message to respond to. Could you try asking me something?",
-        });
-      }
-
-      // Import the chat controller directly
-      const { handleChatRequest } = await import(
-        "./controller/chatbotController.js"
-      );
-
-      // Create mock request/response objects that match what the handler expects
-      const mockReq = {
-        body: req.body,
-        user: req.user || null,
-      };
-
-      // Mock response object that captures what the handler sends
-      const mockRes = {
-        status: (code) => {
-          return {
-            json: (data) => {
-              if (code !== 200) {
-                res.status(code).json(data);
-              } else {
-                res.json(data);
-              }
-            },
-          };
-        },
-        json: (data) => {
-          res.json(data);
-        },
-      };
-
-      // Call the local handler
-      await handleChatRequest(mockReq, mockRes);
-    }
+    res.status(response.status).json(response.data);
   } catch (error) {
-    // Handle different error types with human-friendly messages
-    console.error("❌ Error processing chat request:", error.message);
-
-    let errorMessage =
-      "I'm having trouble connecting to my services right now. Could you please try again in a moment?";
-    let statusCode = 500;
-
-    if (error.name === "AbortError") {
-      errorMessage =
-        "I'm taking longer than expected to process your request. Let's try a simpler question.";
-    } else if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error(`❌ API responded with status ${error.response.status}`);
-      statusCode = error.response.status;
-
-      if (error.response.status === 400) {
-        errorMessage =
-          "I couldn't understand your request. Could you try rephrasing your question?";
-      }
-    } else if (error.request) {
-      // The request was made but no response was received
-      errorMessage =
-        "I'm unable to reach my backend services. They might be temporarily offline.";
-    }
-
-    res.status(statusCode).json({
-      response: errorMessage,
+    console.error(
+      `❌ Proxy Error [${endpoint}]:`,
+      error?.response?.data || error.message
+    );
+    res.status(error?.response?.status || 500).json({
+      error: error?.response?.data || "Unexpected error from FastAPI.",
     });
   }
-});
+};
 
-app.post("/api/analyze_survey", async (req, res) => {
-  try {
-    const response = await axios.post(
-      `${FLASK_API_BASE_URL}/api/user`,
-      req.body,
-      {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      }
-    );
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Error analyzing survey:", error.message);
-    res
-      .status(500)
-      .json({ error: "Failed to analyze survey data. Please try again." });
-  }
-});
+// ✅ Routes mapped to FastAPI
+app.post("/api/chat", (req, res) => forwardPost(req, res, "/phi-model/chat"));
+app.post("/api/infer", (req, res) => forwardPost(req, res, "/phi-model/infer"));
+app.post("/api/analyze_survey", (req, res) =>
+  forwardPost(req, res, "/api/user")
+);
+app.post("/api/generate_plan", (req, res) =>
+  forwardPost(req, res, "/api/generate_plan")
+);
 
-app.post("/api/generate_plan", async (req, res) => {
-  try {
-    const response = await axios.post(
-      `${FLASK_API_BASE_URL}/api/generate_plan`,
-      req.body,
-      {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      }
-    );
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Error generating plan:", error.message);
-    res
-      .status(500)
-      .json({ error: "Failed to generate financial plan. Please try again." });
-  }
-});
-
-// ✅ Serve Frontend
+// ⚛️ Serve React Frontend
 app.use(express.static(path.join(__dirname, "../client/build")));
 app.get("*", (req, res) =>
   res.sendFile(path.join(__dirname, "../client/build/index.html"))
 );
 
-// ✅ Start Server
+// 🚀 Start Server
 app.listen(PORT, () =>
-  console.log(`🚀 Server running at http://localhost:${PORT}`)
+  console.log(`🚀 Server is running on http://localhost:${PORT}`)
 );

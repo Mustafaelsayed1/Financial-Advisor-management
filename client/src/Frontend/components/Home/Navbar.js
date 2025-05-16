@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "../../../context/AuthContext";
 import { useLogout } from "../../../hooks/useLogout.js";
 import "../styles/navbar.css";
-import Logo from "../../../assets/img/latest_logo.svg";
+import Logo from "../../../assets/latest_logo.png";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -149,19 +149,7 @@ const NavBar = () => {
           </li>
           <li className="nav-item">
             <Link
-              to="/services"
-              className={
-                location.pathname === "/services"
-                  ? "nav-link active"
-                  : "nav-link"
-              }
-            >
-              Services
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link
-              to="/life-management"
+              to="/lifemanagement"
               className={
                 location.pathname === "/life-management"
                   ? "nav-link active"

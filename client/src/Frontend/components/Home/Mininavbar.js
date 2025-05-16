@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 import { Link as ScrollLink } from "react-scroll";
-// import logo from "../assets/images/logo.png"; // Adjust path as per your project
+import Logo from "../../../assets/latest_logo.png";
 import Login from "../LOGIN&REGISTRATION/Login/Login"; // Adjust path to Login component
 import { useAuthContext } from "../../../context/AuthContext";
 import { useLogout } from "../../../hooks/useLogout.js";
@@ -40,7 +40,7 @@ const NavBar = () => {
       <Container fluid>
         <Navbar.Brand as={Link} to="/" className="navbar-brand">
           <img
-            // src={logo}
+            src={Logo}
             alt="Company Logo"
             style={{ width: "80px", height: "57px", top: 0 }}
           />

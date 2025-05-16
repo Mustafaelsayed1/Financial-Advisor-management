@@ -94,7 +94,23 @@ router.put("/meta/login", updateLoginMeta); // Called on login
 
 router.put("/admin/update-user/:id", updateUserRoleOrPassword);
 
-router.put("/admin/update-role/:id", auth, authorizeRoles("admin"), updateUserRole);
+router.put(
+  "/admin/update-role/:id",
+  auth,
+  authorizeRoles("admin"),
+  updateUserRole
+);
+
+// ✅ Fetch profile of the currently authenticated user
+router.get("/profile", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ user });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching profile" });
+  }
+});
 
 /**
  * ⚠️ OPTIONAL (if you're using a controller function)
