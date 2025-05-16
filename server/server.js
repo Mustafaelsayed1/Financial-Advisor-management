@@ -31,9 +31,7 @@ const PORT = process.env.PORT || 4000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 const FLASK_API_BASE_URL = "http://localhost:8000/phi-model";
 const JWT_SECRET = process.env.JWT_SECRET || "secure_dev_token";
-const MONGO_URL =
-  process.env.MONGO_URL ||
-  "mongodb+srv://your_user:your_pass@cluster.mongodb.net/db";
+const MONGO_URL = process.env.MONGO_URL ||"mongodb+srv://your_user:your_pass@cluster.mongodb.net/db";
 
 // 🚨 Verify Config
 if (!MONGO_URL) {
