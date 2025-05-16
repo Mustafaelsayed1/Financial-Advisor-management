@@ -13,7 +13,7 @@ import MiniNavbar from "./Frontend/components/Home/Mininavbar";
 import Chatbot from "./Frontend/components/chatbot/chatbot";
 import Questionnaire from "./Frontend/components/Dashboard/Questionnaire";
 import Dashboard from "./Frontend/components/Dashboard/Dashboard";
-import Sidebar from "./Frontend/components/Dashboard/sidebar";
+
 import AnalyticsReport from "./Frontend/components/Dashboard/analytics";
 import Settings from "./Frontend/components/Dashboard/settings";
 import Profile from "./Frontend/components/Dashboard/profile";
@@ -73,7 +73,8 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                  
+
                   <Dashboard />
                   <Footer />
                 </>
@@ -86,7 +87,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                  
                   <Settings />
                   <Footer />
                 </>
@@ -99,7 +100,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                  
                   <Contact />
                   <Footer />
                 </>
@@ -112,7 +113,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                  
                   <Profile />
                   <Footer />
                 </>
@@ -125,7 +126,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                 
                   <AnalyticsReport />
                   <Footer />
                 </>
@@ -138,7 +139,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                 
                   <AIChat />
                   <Footer />
                 </>
@@ -151,7 +152,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                
                   <Questionnaire />
                   <Footer />
                 </>
@@ -164,7 +165,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                 
                   <LifeManagement />
                   <Footer />
                 </>
@@ -177,7 +178,7 @@ function App() {
               <ProtectedRoute>
                 <>
                   <MiniNavbar />
-                  <Sidebar />
+                 
                   <StatisticsPage />
                   <Footer />
                 </>
