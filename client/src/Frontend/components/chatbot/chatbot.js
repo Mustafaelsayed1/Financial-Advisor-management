@@ -177,14 +177,16 @@ const Chatbot = () => {
   return (
     <div className="chatbot-wrapper">
       {/* Chat toggle button */}
+  <div className="d-flex justify-content-center align-items-center">
       <button
-        className={`chat-toggle-btn ${isChatOpen ? "active" : ""}`}
+        className={`chat-toggle-btn ${isChatOpen ? "active" : ""} `}
         onClick={toggleChat}
         aria-label={isChatOpen ? "Close chat" : "Open chat assistant"}
       >
-        <FontAwesomeIcon icon={faCommentDots} />
+       <FontAwesomeIcon icon={faCommentDots}/>
         <span className="chat-toggle-text">Chat with Us</span>
       </button>
+  </div>
 
       {/* Chat container */}
       <div className={`chatbot-container ${isChatOpen ? "open" : "closed"}`}>

@@ -11,7 +11,7 @@ const CallToActionSection = () => {
   };
 
   return (
-    <div className="cta-section">
+    <div className="cta-section rounded-4">
       <Container>
         <Row className="justify-content-center">
           <Col lg={8} md={10} className="text-center">

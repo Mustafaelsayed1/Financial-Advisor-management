@@ -109,17 +109,19 @@ function Footer() {
             <p>
               Get the latest financial tips and updates delivered to your inbox.
             </p>
-            <Form className="newsletter-form">
-              <div className="d-flex">
+            <Form className="newsletter-form d-flex ">
+             
                 <Form.Control
                   type="email"
-                  placeholder="Your email address"
-                  className="newsletter-input"
+                  placeholder="Your email address ......"
+                  className="newsletter-input form-control"
                 />
-                <Button type="submit" className="newsletter-button">
+
+ <Button type="submit" className="newsletter-button m-0 ">
                   Subscribe
                 </Button>
-              </div>
+               
+         
             </Form>
           </Col>
         </Row>

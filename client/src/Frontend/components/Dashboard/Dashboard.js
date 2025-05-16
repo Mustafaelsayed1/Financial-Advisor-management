@@ -163,7 +163,7 @@ const Dashboard = () => {
         </Modal.Footer>
       </Modal>
 
-      <Container className="dashboard-content">
+      <Container className="dashboard-content container-fluid m-0 ms-3">
         <Tab.Container
           id="dashboard-tabs"
           activeKey={activeTab}
