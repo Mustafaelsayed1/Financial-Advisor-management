@@ -47,8 +47,8 @@ To get started with Financial AI Advisor, follow these steps:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/MohamedBoghdaddy/FinancialAIAdvisor.git
-cd FinancialAIAdvisor
+git clone https://github.com/Mustafaelsayed1/Financial-Advisor-management.git
+cd Financial-Advisor-management
 ```
 
 ### 2. Install Backend Dependencies
